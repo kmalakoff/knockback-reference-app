@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Knockback.js Reference App</title>
+  <link rel="stylesheet" href="vendor/css/normalize.css">
+  <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.css">
+  <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-responsive.css">
+
+  <style type="text/css">
+    /* standard page/pane css from 'knockback-page-navigators.css' */
+    .pane-navigator       {position: absolute; padding: 0; margin: 0; left: 0; right: 0; top: 0; bottom: 0; overflow: hidden;}
+    .pane-navigator.page  {overflow: visible; top: 80px;}
+
+    .pane                 {position: absolute; padding: 0; margin: 0; width: 100%; display: none;}
+    .pane.active          {display: block;}
+    .pane.on-top          {z-index: 100;}
+
+    /* responsive header sizing */
+    @media (max-width: 975px) { .pane-navigator.page  {top: 100px;} }
+    @media (max-width: 769px) { .pane-navigator.page  {top: 110px;} }
+    @media (max-width: 510px) { .pane-navigator.page  {top: 150px;} }
+
+    .pane.page            {background-color: white} /* make pages opaque for transitions */
+
+    /* cell styling */
+    .cell                 {color: grey; min-height: 120px;}
+    .cell:hover           {color: black; background-color: #E5E5E5;}
+    .cell legend          {font-size: 14px;}
+    .cell:hover legend    {border-bottom: 1px solid darkgrey;}
+  </style>
+
+</head>
+<body>
+
+  <!-- ****************** -->
+  <!-- TUTORIAL START -->
+  <!-- ****************** -->
+
+  <!-- PAGE TEMPLATE - APP -->
+  <script type="text/x-jquery-tmpl" id="app">
+    <header data-bind="template: {name: 'page_header', data: header}"></header>
+    <section class='pane-navigator page'></section>
+  </script>
+
+  <!-- PAGE TEMPLATE - HOME -->
+  <script type="text/x-jquery-tmpl" id="home">
+    <div class='pane page'><div class='container'>
+
+      <div class='hero-unit'>
+        <h1 class='hidden-phone'>Welcome to the Knockback.js Reference App</h1>
+        <h2 class='visible-phone'>Welcome to the Knockback.js Reference App</h2>
+        <br/>
+        <p>This application provides a reference implementation for a simple Knockback.js application including routing, memory management, and pane and page transitions*. Enjoy!</p>
+        <br/>
+        <p>
+          <button class="btn btn-warning" data-bind="click: app.goToThings">Look at Things</button>
+        </p>
+        </br>
+        <span>*<a href='http://kmalakoff.github.com/knockback-navigators/'>KnockbackNavigators.js</a> required</span>
+      </div>
+
+    </div></div>
+  </script>
+
+  <!-- PAGE TEMPLATE - THINGS -->
+  <script type="text/x-jquery-tmpl" id="things_page">
+    <div class='pane page'><div class='container'>
+
+      <!-- * LINKS TO THINGS - TOP * -->
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: goBack}}"></div>
+
+      <!-- * ADD A THING * -->
+      <div class="thumbnail form-actions">
+        <div data-bind="template: {name: 'thing_edit', data: new_thing}"></div>
+
+        <div class='span11 pagination-centered'>
+          <a class='btn btn-small btn-primary' data-bind="click: new_thing.onAdd"><i class="icon-plus icon-white"></i><span> Add</span></a>
+          <a class='btn btn-small' data-bind="click: new_thing.onClear"><i class="icon-arrow-left"></i><span> Clear</span></a>
+          <div style="height:10px"></div>
+        </div>
+      </div>
+
+      <!-- * ALL THINGS CELLS * -->
+      <div class="row" data-bind="foreach: things">
+        <div class='span6'>
+          <div class='cell thumbnail form-actions' data-bind="click: goTo, template: {name: 'thing_view', data: $data}"></div>
+        </div>
+      </div>
+
+      <!-- * LINKS TO THINGS - BOTTOM * -->
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: goBack}}"></div>
+
+    </div></div>
+  </script>
+
+  <!-- SHARED TEMPLATE - THING LINKS BAR-->
+  <script type="text/x-jquery-tmpl" id="thing_links_hortizontal_bar">
+    <div class="btn-toolbar">
+
+      <button class='btn btn-small' data-bind="click: goBack"><i class='icon-step-backward'></i><span> Back</span></button>
+
+      <div class="btn-group">
+        <!-- * DELETE ALL BUTTON IF ON THINGS PAGE * -->
+        <!-- ko if: window.location.hash==='#things' -->
+          <button class='btn btn-small btn-inverse' data-bind="click: app.deleteAllThings">Delete All</button>
+        <!-- /ko -->
+
+        <!-- * BUTTON FOR EACH THING * -->
+        <!-- ko foreach: links -->
+         <button class='btn btn-small btn-info' data-bind="click: goTo"><span data-bind="text: name"></span></button>
+        <!-- /ko -->
+      </div>
+
+    </div>
+   </script>
+
+  <!-- PAGE TEMPLATE - THING -->
+  <script type="text/x-jquery-tmpl" id="thing_page">
+    <div class='pane page'><div class='container'>
+
+      <!-- * LINKS TO THINGS - TOP * -->
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: goBack}}"></div>
+
+      <!-- ko if: is_loaded -->
+        <div class='cell thumbnail form-actions' data-bind="template: {name: 'thing_view_embedded', data: $data}"></div>
+      <!-- /ko -->
+
+      <!-- * LOADING SPINNER * -->
+      <!-- ko ifnot: is_loaded -->
+        <div class="span11 offset5" style="height:320px">
+          <div style="height:45%"></div>
+          <div data-bind="spinner: {}"></div>
+        </div>
+      <!-- /ko -->
+
+    </div></div>
+  </script>
+
+  <!-- SUBVIEW TEMPLATE - THING VIEW FOR EMBEDDED IN PAGE -->
+  <script type="text/x-jquery-tmpl" id="thing_view_embedded">
+    <!-- ko ifnot: edit_mode -->
+      <!-- * EDIT MODE TOGGLE * -->
+      <div class='nav'>
+        <a class='pull-right' data-bind="click: onEdit"><i class="icon-cog"></i></a>
+      </div>
+
+      <!-- * CHOOSE TUTORIAL OR EXTENDED VIEW TEMPLATE * -->
+      <div data-bind="template: {name: app.mode.tutorial? 'thing_view' : 'thing_view_extended', data: $data}"></div>
+
+    <!-- /ko -->
+
+    <!-- ko if: edit_mode -->
+      <!-- * EDIT MODE TOGGLE * -->
+      <div class='nav'>
+        <a class='pull-right' data-bind="click: onCancel"><i class="icon-arrow-left"></i></a>
+      </div>
+
+      <div data-bind="template: {name: 'thing_edit', data: $data}"></div>
+
+      <!-- * FORM BUTTONS * -->
+      <div class='span11 pagination-centered'>
+        <a class='btn btn-success' data-bind="click: onSubmit"><i class="icon-ok icon-white"></i> Submit</a>
+        <a class='btn btn-danger' data-bind="click: onDelete"><i class="icon-remove icon-white"></i> Delete</a>
+        <div style="height:10px"></div>
+      </div>
+    <!-- /ko -->
+  </script>
+
+  <!-- SUBVIEW TEMPLATE - THING VIEW MODE -->
+  <script type="text/x-jquery-tmpl" id="thing_view">
+    <div class='row'>
+
+      <!-- * MY INFORMATION * -->
+      <div class='span2'>
+        <legend data-bind="text: name"></legend>
+        <p>Caption: <span data-bind="text: caption"></span></p>
+        <p>Owner: <span data-bind="text: my_owner().name"></span></p>
+      </div>
+
+      <!-- * MY THINGS LINKS * -->
+      <div class='span3'>
+        <legend data-bind="text: 'My Things (' + my_things().length + ')'"></legend>
+        <div class="nav" data-bind="foreach: my_things">
+          <button class='btn btn-small btn-warning' data-bind="click: goTo, text: name"></button>
+        </div>
+      </div>
+
+    </div>
+  </script>
+
+  <!-- SUBVIEW TEMPLATE - THING EDIT MODE -->
+  <script type="text/x-jquery-tmpl" id="thing_edit">
+    <div class='row'>
+
+      <!-- * MY INFORMATION * -->
+      <div class='span6'>
+        <legend>Me</legend>
+        <form class="form-horizontal">
+
+          <div class="control-group" data-bind="css: {error: name_errors}">
+            <label class="control-label" for="inputName">Name</label>
+            <div class="controls">
+              <input type="text" id="inputName" data-bind="value: name">
+              <span class="help-inline" data-bind="visible: name_errors, text: name_errors"></span>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label">Caption</label>
+            <div class="controls">
+              <input type="text" data-bind="value: caption">
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- * MY THINGS SELECTOR * -->
+      <div class='span5'>
+        <legend data-bind="text: 'My Things (' + my_things_select().length + ')'"></legend>
+        <select multiple="multiple" data-bind="options: available_things, optionsText: 'name', selectedOptions: my_things_select"></select>
+      </div>
+    </div>
+  </script>
+
+  <!-- ****************** -->
+  <!-- APP MANAGEMENT     -->
+  <!-- ****************** -->
+
+  <!-- SHARED TEMPLATE - HEADER COMPONENT -->
+  <script type="text/x-jquery-tmpl" id="page_header">
+    <div class="navbar navbar-fixed-top navbar-inverse"><div class="navbar-inner"><div class="container">
+
+      <ul class="nav">
+
+        <li><a class='brand' href="http://kmalakoff.github.com/knockback/">Knockback.js Reference App</a></li>
+
+        <!-- * NAVIGATION ITEMS * -->
+        <!-- ko foreach: nav_items -->
+          <li data-bind="css: {active: $parent.active_url()===url}"><a data-bind="text: name, click: goTo"></a></li>
+        <!-- /ko -->
+
+      </ul>
+
+      <!-- * APPLICATION MANAGEMENT AND CREDITS * -->
+      <div data-bind="template: {name: 'app_management', data: $data}"></div>
+      <div data-bind="template: {name: 'credits', data: $data}"></div>
+
+    </div></div></div>
+  </script>
+
+  <!-- Import jQuery before the rest-->
+  <script src="vendor/js/jquery-1.8.0.js"></script>
+
+  <!-- Knockback -->
+  <script src="vendor/js/knockback-core-stack-0.16.0.js"></script>
+
+  <!-- Knockback optional libraries-->
+  <script src="vendor/js/backbone-modelref-0.1.3.js"></script>
+  <script src="vendor/js/backbone-relational-0.6.0.js"></script>
+  <script src="vendor/js/knockback-statistics-0.16.0.js"></script>
+  <script src="vendor/js/knockback-page-navigator-simple-0.1.0.js"></script>
+  <script src="vendor/js/knockback-page-navigator-panes-0.1.0.js"></script>
+  <script src="vendor/js/knockback-sample-transitions-0.1.0.js"></script>
+
+  <!-- App Dependencies -->
+  <script src="vendor/js/backbone.localStorage.js"></script>
+  <script src="vendor/js/spin.js"></script>
+
+  <!-- The App -->
+  <script src="app.js"></script>
+  <script src="app_extended.js"></script>
+</body>
+</html>
