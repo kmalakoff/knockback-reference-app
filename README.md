@@ -10,10 +10,10 @@ You can try out the application [here](kmalakoff.github.com/knockback-reference-
 
 In addition to a the Tutorial reference application, you can find more advanced implementations that use [KnockbackNavigators.js](https://github.com/kmalakoff/knockback-navigators) for page and embedded pane transitions (under DemoMode):
 
-* Panes: adds sliding panes with embedded cells for each relationship instead of simple buttons.
-* Page Animations: adds transition animations without history when navigating between pages.
-* Page Animations + History: adds transition animations with history when navigating between pages. Note: you can re-loading the page and the transitions will work as if you navigated from the main page.
-* Page Animations + History + No Cache: when you use history, you need to be careful to not keep too many pages in memory. This example show you how to on-demand load pages by passing a create function instead of element to the page navigator.
+* ***Panes***: adds sliding panes with embedded cells for each relationship instead of simple buttons.
+* ***Page Animations***: adds transition animations without history when navigating between pages.
+* ***Page Animations + History***: adds transition animations with history when navigating between pages. Note: you can re-loading the page and the transitions will work as if you navigated from the main page.
+* ***Page Animations + History + No Cache***: when you use history, you need to be careful to not keep too many pages in memory. This example show you how to on-demand load pages by passing a create function instead of element to the page navigator.
 
 To help verify correct memory management and performance, the reference application provides some statistics helpers (under DemoMode -> Statistics):
 
