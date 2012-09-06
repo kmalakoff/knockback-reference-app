@@ -1,6 +1,4 @@
-````
-Knockback.js Reference App
-````
+![logo](https://github.com/kmalakoff/knockback-reference-app/raw/master/media/logo.png)
 
 Knockback.js Reference Application provides a sample architecure for a Knockback.js application including page routing, separation of Models/ViewModels/Views, and memory management.
 
