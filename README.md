@@ -2,7 +2,7 @@
 
 Knockback.js Reference Application provides a sample architecure for a Knockback.js application including page routing, separation of Models/ViewModels/Views, and memory management.
 
-You can try out the application [here](kmalakoff.github.com/knockback-reference-app) and can find step-by-step tutorial on the [Knockback.js website](kmalakoff.github.com/knockback)
+You can try out the application [here](kmalakoff.github.com/knockback-reference-app) and can find step-by-step tutorial on the [Knockback.js website](http://kmalakoff.github.com/knockback/app_knockback_reference.html)
 
 ###Extended Features
 
