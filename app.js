@@ -170,7 +170,7 @@
   });
 
   window.RouterBackboneJS = Backbone.Router.extend({
-    constructor: function(page_navigator) {
+    constructor: function() {
       var _this = this;
       Backbone.Router.prototype.constructor.apply(this, arguments);
       this.active_el = null;

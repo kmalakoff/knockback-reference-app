@@ -1,5 +1,5 @@
 window.RouterBackboneJS = Backbone.Router.extend({
-  constructor: (page_navigator) ->
+  constructor: ->
     Backbone.Router.prototype.constructor.apply(@, arguments)
     @active_el = null
 
