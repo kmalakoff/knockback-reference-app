@@ -34,7 +34,6 @@
         }
         model._relations = [];
         model._previousAttributes = {};
-        model.attributes = {};
       }
       collection.models = [];
     }
@@ -47,7 +46,7 @@
       Backbone.Router.prototype.constructor.apply(this, arguments);
       this.route('', null, page_navigator.dispatcher(function() {
         return page_navigator.loadPage({
-          el: kb.renderAutoReleasedTemplate('home', {}),
+          el: kb.renderTemplate('home', {}),
           transition: {
             name: 'FadeIn',
             duration: 1000
@@ -56,7 +55,7 @@
       }));
       this.route('things', null, page_navigator.dispatcher(function() {
         return page_navigator.loadPage({
-          el: kb.renderAutoReleasedTemplate('things_page', new ThingsPageViewModel()),
+          el: kb.renderTemplate('things_page', new ThingsPageViewModel()),
           transition: 'NavigationSlide'
         });
       }));
@@ -64,7 +63,7 @@
         var model;
         model = app.collections.things.get(id) || new Backbone.ModelRef(app.collections.things, id);
         return page_navigator.loadPage({
-          el: kb.renderAutoReleasedTemplate('thing_page', new ThingCellViewModel(model)),
+          el: kb.renderTemplate('thing_page', new ThingCellViewModel(model)),
           transition: 'CoverVertical'
         });
       }));
@@ -83,7 +82,7 @@
       this.route('', null, page_navigator.dispatcher(function() {
         return page_navigator.loadPage({
           create: function() {
-            return kb.renderAutoReleasedTemplate('home', {});
+            return kb.renderTemplate('home', {});
           },
           transition: {
             name: 'FadeIn',
@@ -94,7 +93,7 @@
       this.route('things', null, page_navigator.dispatcher(function() {
         return page_navigator.loadPage({
           create: function() {
-            return kb.renderAutoReleasedTemplate('things_page', new ThingsPageViewModel());
+            return kb.renderTemplate('things_page', new ThingsPageViewModel());
           },
           transition: 'NavigationSlide'
         });
@@ -104,7 +103,7 @@
         model = app.collections.things.get(id) || new Backbone.ModelRef(app.collections.things, id);
         return page_navigator.loadPage({
           create: function() {
-            return kb.renderAutoReleasedTemplate('thing_page', new ThingCellViewModel(model));
+            return kb.renderTemplate('thing_page', new ThingCellViewModel(model));
           },
           transition: 'CoverVertical'
         });
