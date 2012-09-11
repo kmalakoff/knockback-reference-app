@@ -28,7 +28,6 @@ Backbone.Store::clear = ->
 
       # clear up attributes
       model._previousAttributes = {}
-      model.attributes = {}
     collection.models = []
 
   @_collections = []

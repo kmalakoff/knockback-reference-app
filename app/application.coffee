@@ -12,12 +12,13 @@ class window.Application
     ko.setTemplateEngine(new TemplateEngine()) # register the template engine that holds strings for non-tutorial views
     Backbone.history or= new Backbone.History() # initialize history s it is guaranteed to exist
 
-    # create the things
+    # load things collection (later to demonstrate Backbone.ModelRef)
     @collections.things = new ThingCollection()
+    _.delay((-> app.collections.things.fetch()), 600)
 
     # create and bind statistics element
     @view_models.statistics = new StatisticsViewModel()
-    @statistics_el = kb.renderAutoReleasedTemplate('statistics', @view_models.statistics)
+    @statistics_el = kb.renderTemplate('statistics', @view_models.statistics)
     $('body').append(@statistics_el)
 
     # set the current mode
@@ -51,7 +52,7 @@ class window.Application
 
     # tutorial or extended version
     @view_model = if mode.tutorial then new ApplicationViewModel() else new ApplicationViewModelExtended(mode)
-    @el = kb.renderAutoReleasedTemplate('app', @view_model, {afterRender: @view_model.afterRender})
+    @el = kb.renderTemplate('app', @view_model, {afterRender: @view_model.afterRender})
     $('body').append(@el)
 
     # close statistics after creating the new view model (statistics close tries to re-create the latest app mode assuming the user closed the modal)

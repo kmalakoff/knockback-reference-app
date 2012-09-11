@@ -34,10 +34,6 @@ window.ThingCellViewModel = kb.ViewModel.extend({
     not model or model.bindLoadingStates(@_onModelLoaded)
     @
 
-  destroy: ->
-    @my_model?.unbindLoadingStates(@_onModelLoaded)
-    kb.ViewModel.prototype.destroy.call(@)
-
   onEdit: ->
     @my_things_select(@my_things())
     @edit_mode(true)

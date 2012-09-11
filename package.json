@@ -25,7 +25,7 @@
     "knockback": "=0.16.2beta1",
     "knockback-navigators": ">=0.1.0",
     "backbone-relational": ">=0.6.0",
-    "backbone-modelref": ">=0.1.2"
+    "backbone-modelref": ">=0.1.4"
   },
 
   "version"       : "0.1.0"

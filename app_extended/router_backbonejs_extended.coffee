@@ -4,14 +4,14 @@ window.RouterBackboneJSExtended = Backbone.Router.extend({
 
     @route('', null, page_navigator.dispatcher(->
       page_navigator.loadPage({
-        el: kb.renderAutoReleasedTemplate('home', {})
+        el: kb.renderTemplate('home', {})
         transition: {name: 'FadeIn', duration: 1000}
       })
     ))
 
     @route('things', null, page_navigator.dispatcher(->
       page_navigator.loadPage({
-        el: kb.renderAutoReleasedTemplate('things_page', new ThingsPageViewModel())
+        el: kb.renderTemplate('things_page', new ThingsPageViewModel())
         transition: 'NavigationSlide'
       })
     ))
@@ -19,7 +19,7 @@ window.RouterBackboneJSExtended = Backbone.Router.extend({
     @route('things/:id', null, page_navigator.dispatcher((id)->
       model = app.collections.things.get(id) or new Backbone.ModelRef(app.collections.things, id)
       page_navigator.loadPage({
-        el: kb.renderAutoReleasedTemplate('thing_page', new ThingCellViewModel(model))
+        el: kb.renderTemplate('thing_page', new ThingCellViewModel(model))
         transition: 'CoverVertical'
       })
     ))

@@ -21,8 +21,11 @@
       ko.setTemplateEngine(new TemplateEngine());
       Backbone.history || (Backbone.history = new Backbone.History());
       this.collections.things = new ThingCollection();
+      _.delay((function() {
+        return app.collections.things.fetch();
+      }), 600);
       this.view_models.statistics = new StatisticsViewModel();
-      this.statistics_el = kb.renderAutoReleasedTemplate('statistics', this.view_models.statistics);
+      this.statistics_el = kb.renderTemplate('statistics', this.view_models.statistics);
       $('body').append(this.statistics_el);
       return this.setMode({
         tutorial: true
@@ -72,7 +75,7 @@
         this.el = null;
       }
       this.view_model = mode.tutorial ? new ApplicationViewModel() : new ApplicationViewModelExtended(mode);
-      this.el = kb.renderAutoReleasedTemplate('app', this.view_model, {
+      this.el = kb.renderTemplate('app', this.view_model, {
         afterRender: this.view_model.afterRender
       });
       $('body').append(this.el);
@@ -93,10 +96,7 @@
 
   $(function() {
     window.app = new Application();
-    app.initialize();
-    return _.delay((function() {
-      return app.collections.things.fetch();
-    }), 600);
+    return app.initialize();
   });
 
   ko.bindingHandlers['classes'] = {
@@ -175,15 +175,15 @@
       Backbone.Router.prototype.constructor.apply(this, arguments);
       this.active_el = null;
       this.route('', null, function() {
-        return _this.loadPage(kb.renderAutoReleasedTemplate('home', {}));
+        return _this.loadPage(kb.renderTemplate('home', {}));
       });
       this.route('things', null, function() {
-        return _this.loadPage(kb.renderAutoReleasedTemplate('things_page', new ThingsPageViewModel()));
+        return _this.loadPage(kb.renderTemplate('things_page', new ThingsPageViewModel()));
       });
       return this.route('things/:id', null, function(id) {
         var model;
         model = app.collections.things.get(id) || new Backbone.ModelRef(app.collections.things, id);
-        return _this.loadPage(kb.renderAutoReleasedTemplate('thing_page', new ThingCellViewModel(model)));
+        return _this.loadPage(kb.renderTemplate('thing_page', new ThingCellViewModel(model)));
       });
     },
     loadPage: function(el) {
@@ -370,13 +370,6 @@
       };
       !model || model.bindLoadingStates(this._onModelLoaded);
       return this;
-    },
-    destroy: function() {
-      var _ref;
-      if ((_ref = this.my_model) != null) {
-        _ref.unbindLoadingStates(this._onModelLoaded);
-      }
-      return kb.ViewModel.prototype.destroy.call(this);
     },
     onEdit: function() {
       this.my_things_select(this.my_things());

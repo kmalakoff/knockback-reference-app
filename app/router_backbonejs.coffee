@@ -4,16 +4,16 @@ window.RouterBackboneJS = Backbone.Router.extend({
     @active_el = null
 
     @route('', null, =>
-      @loadPage(kb.renderAutoReleasedTemplate('home', {}))
+      @loadPage(kb.renderTemplate('home', {}))
     )
 
     @route('things', null, =>
-      @loadPage(kb.renderAutoReleasedTemplate('things_page', new ThingsPageViewModel()))
+      @loadPage(kb.renderTemplate('things_page', new ThingsPageViewModel()))
     )
 
     @route('things/:id', null, (id) =>
       model = app.collections.things.get(id) or new Backbone.ModelRef(app.collections.things, id)
-      @loadPage(kb.renderAutoReleasedTemplate('thing_page', new ThingCellViewModel(model)))
+      @loadPage(kb.renderTemplate('thing_page', new ThingCellViewModel(model)))
     )
 
   loadPage: (el) ->
