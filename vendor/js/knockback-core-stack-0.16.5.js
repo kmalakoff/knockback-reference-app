@@ -6979,11 +6979,14 @@ kb.Observable = (function() {
   };
 
   Observable.prototype.model = function(new_model) {
+    if (this.__kb_destroyed) {
+      return;
+    }
     if ((arguments.length === 0) || (this.m === new_model)) {
       return this.m;
     }
     this.m = new_model;
-    return this.__kb_destroyed || this.update();
+    return this.update();
   };
 
   Observable.prototype.update = function(new_value) {
@@ -7726,10 +7729,10 @@ if (this.$) {
   });
 } else {
   (onReady = function() {
-    if (!document.body) {
+    if (document.readyState !== "complete") {
       return setTimeout(onReady, 0);
     }
-    return setTimeout(kb.injectApps, 0);
+    return kb.injectApps();
   })();
 }
 ; return kb;});
