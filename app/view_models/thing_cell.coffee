@@ -16,8 +16,6 @@ window.ThingCellViewModel = kb.ViewModel.extend({
 
     @sorted_thing_links = kb.collectionObservable(app.collections.things, {view_model: ThingLinkViewModel, sort_attribute: 'name'})
     @edit_mode = ko.observable(false)
-    @goTo = => window.location.hash = "#things/#{@id()}"
-    @goBack = -> kb.loadUrl('#things', {name: 'NavigationSlide', inverse: true})
 
     # validations
     @name_errors = ko.computed(=>
@@ -41,7 +39,7 @@ window.ThingCellViewModel = kb.ViewModel.extend({
   onDelete: ->
     # destroy, then save all changed models since relationships may have been updated after Backbone.Relational had a chance to update
     model.destroy(success: -> _.defer(app.saveAllThings)) if (model = kb.utils.wrappedObject(@))
-    kb.loadUrl('#things') # redirect
+    kb.loadUrl('things') # redirect
 
   onSubmit: ->
     return if @name_errors() # errors

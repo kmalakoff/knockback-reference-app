@@ -9,9 +9,7 @@ window.NewThingViewModel = kb.ViewModel.extend({
     })
     # use a temporary collection so to not disturb the existing my_owner relationships during selection (one unique owner per model)
     @my_things_select = ko.observableArray()
-
-    # share the view models so the knockout select binding can transfer view_models
-    @available_things = new ThingLinkCollectionObservable(app.collections.things, {sort_attribute: 'name'})
+    @available_things = kb.collectionObservable(app.collections.things, {sort_attribute: 'name', view_model: ThingLinkViewModel})
 
     # validations
     @validations_filter_count = ko.observable(2)

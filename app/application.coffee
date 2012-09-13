@@ -4,7 +4,7 @@ _ = kb._; Backbone = kb.Backbone
 class window.Application
   constructor: ->
     # bind functions so they can be called from templates
-    _.bindAll(@, 'goToThings', 'deleteAllThings', 'saveAllThings', 'setMode')
+    _.bindAll(@, 'deleteAllThings', 'saveAllThings', 'setMode')
     @view_models = {}
     @collections = {}
 
@@ -26,9 +26,6 @@ class window.Application
 
   destroy: ->
     ko.releaseNode(@statistics_el); @statistics_el = @view_models = null
-
-  goToThings: ->
-    window.location.hash = 'things'
 
   deleteAllThings: ->
     model.destroy() for model in _.clone(@collections.things.models)

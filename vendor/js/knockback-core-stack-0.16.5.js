@@ -6704,7 +6704,6 @@ kb.ModelWatcher = (function() {
                 continue;
               }
               !kb.statistics || addStatisticsEvent(model, event_name, info);
-              if (info.__kb_destroyed) debugger;
               info.update();
             }
           }

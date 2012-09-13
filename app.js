@@ -12,7 +12,7 @@
   window.Application = (function() {
 
     function Application() {
-      _.bindAll(this, 'goToThings', 'deleteAllThings', 'saveAllThings', 'setMode');
+      _.bindAll(this, 'deleteAllThings', 'saveAllThings', 'setMode');
       this.view_models = {};
       this.collections = {};
     }
@@ -35,10 +35,6 @@
     Application.prototype.destroy = function() {
       ko.releaseNode(this.statistics_el);
       return this.statistics_el = this.view_models = null;
-    };
-
-    Application.prototype.goToThings = function() {
-      return window.location.hash = 'things';
     };
 
     Application.prototype.deleteAllThings = function() {
@@ -249,13 +245,13 @@
           name: 'Welcome',
           url: '',
           goTo: function(vm) {
-            return window.location.hash = vm.url;
+            return kb.loadUrl(vm.url);
           }
         }, {
           name: 'Manage Things',
-          url: '#things',
+          url: 'things',
           goTo: function(vm) {
-            return window.location.hash = vm.url;
+            return kb.loadUrl(vm.url);
           }
         }
       ]);
@@ -287,8 +283,9 @@
         excludes: ['my_things']
       });
       this.my_things_select = ko.observableArray();
-      this.available_things = new ThingLinkCollectionObservable(app.collections.things, {
-        sort_attribute: 'name'
+      this.available_things = kb.collectionObservable(app.collections.things, {
+        sort_attribute: 'name',
+        view_model: ThingLinkViewModel
       });
       this.validations_filter_count = ko.observable(2);
       this.name_errors = ko.computed(function() {
@@ -359,15 +356,6 @@
         sort_attribute: 'name'
       });
       this.edit_mode = ko.observable(false);
-      this.goTo = function() {
-        return window.location.hash = "#things/" + (_this.id());
-      };
-      this.goBack = function() {
-        return kb.loadUrl('#things', {
-          name: 'NavigationSlide',
-          inverse: true
-        });
-      };
       this.name_errors = ko.computed(function() {
         var name;
         if (!(name = _this.name())) {
@@ -400,7 +388,7 @@
           }
         });
       }
-      return kb.loadUrl('#things');
+      return kb.loadUrl('things');
     },
     onSubmit: function() {
       var model;
@@ -435,24 +423,11 @@
 
   window.ThingLinkViewModel = kb.ViewModel.extend({
     constructor: function(model, options) {
-      var _this = this;
       kb.ViewModel.prototype.constructor.call(this, model, {
         keys: ['name', 'id'],
         options: options
       });
-      this.goTo = function() {
-        return window.location.hash = "#things/" + (_this.id());
-      };
       return this;
-    }
-  });
-
-  window.ThingLinkCollectionObservable = kb.CollectionObservable.extend({
-    constructor: function(collection, options) {
-      return kb.CollectionObservable.prototype.constructor.call(this, collection, {
-        view_model: ThingLinkViewModel,
-        options: options
-      });
     }
   });
 
@@ -465,12 +440,6 @@
       view_model: ThingCellViewModel
     });
     this.new_thing = new NewThingViewModel();
-    this.goBack = function() {
-      return kb.loadUrl('#', {
-        name: 'NavigationSlide',
-        inverse: true
-      });
-    };
     return this;
   };
 

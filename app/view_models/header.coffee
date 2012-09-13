@@ -6,8 +6,8 @@ class window.HeaderViewModel
 
     # nav items
     @nav_items = ko.observableArray([
-      {name: 'Welcome',       url: '',        goTo: (vm) -> window.location.hash = vm.url},
-      {name: 'Manage Things', url: '#things', goTo: (vm) -> window.location.hash = vm.url}
+      {name: 'Welcome',       url: '',        goTo: (vm) -> kb.loadUrl(vm.url)},
+      {name: 'Manage Things', url: 'things',  goTo: (vm) -> kb.loadUrl(vm.url)}
     ])
 
     @credits_is_opened = ko.observable(false)
