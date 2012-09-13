@@ -39,13 +39,18 @@ window.ThingCellViewModel = kb.ViewModel.extend({
     @edit_mode(true)
 
   onDelete: ->
-    model.destroy() if (model = kb.utils.wrappedObject(@))
+    # destroy, then save all changed models since relationships may have been updated after Backbone.Relational had a chance to update
+    model.destroy(success: -> _.defer(app.saveAllThings)) if (model = kb.utils.wrappedObject(@))
+    kb.loadUrl('#things') # redirect
 
   onSubmit: ->
     return if @name_errors() # errors
     if (model = kb.utils.wrappedObject(@))
       model.get('my_things').reset(_.map(@my_things_select(), (vm) -> kb.utils.wrappedModel(vm))) # add the relationships now that they are decided
-      model.save()
+
+      # save all changed models since relationships may have been updated
+      app.saveAllThings()
+
     @edit_mode(false)
 
   onCancel: ->

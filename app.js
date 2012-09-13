@@ -12,7 +12,7 @@
   window.Application = (function() {
 
     function Application() {
-      _.bindAll(this, 'deleteAllThings', 'goToThings', 'setMode');
+      _.bindAll(this, 'goToThings', 'deleteAllThings', 'saveAllThings', 'setMode');
       this.view_models = {};
       this.collections = {};
     }
@@ -47,6 +47,18 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         model = _ref[_i];
         model.destroy();
+      }
+      return this;
+    };
+
+    Application.prototype.saveAllThings = function() {
+      var model, _i, _len, _ref;
+      _ref = this.collections.things.models;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        model = _ref[_i];
+        if (model.hasChanged()) {
+          model.save();
+        }
       }
       return this;
     };
@@ -308,7 +320,11 @@
         return kb.utils.wrappedModel(vm);
       }));
       app.collections.things.add(model);
-      model.save();
+      model.save(null, {
+        success: function() {
+          return _.defer(app.saveAllThings);
+        }
+      });
       return this.onClear();
     },
     onClear: function() {
@@ -378,8 +394,13 @@
     onDelete: function() {
       var model;
       if ((model = kb.utils.wrappedObject(this))) {
-        return model.destroy();
+        model.destroy({
+          success: function() {
+            return _.defer(app.saveAllThings);
+          }
+        });
       }
+      return kb.loadUrl('#things');
     },
     onSubmit: function() {
       var model;
@@ -390,7 +411,7 @@
         model.get('my_things').reset(_.map(this.my_things_select(), function(vm) {
           return kb.utils.wrappedModel(vm);
         }));
-        model.save();
+        app.saveAllThings();
       }
       return this.edit_mode(false);
     },

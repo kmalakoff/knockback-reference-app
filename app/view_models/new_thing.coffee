@@ -33,7 +33,9 @@ window.NewThingViewModel = kb.ViewModel.extend({
     model = kb.utils.wrappedObject(@)
     model.get('my_things').reset(_.map(@my_things_select(), (vm) -> kb.utils.wrappedModel(vm))) # add the relationships now that they are decided
     app.collections.things.add(model)
-    model.save()
+
+    # save new model to assign an id, then save all after Backbone.Relational had a chance to update
+    model.save(null, {success: -> _.defer(app.saveAllThings)})
 
     # clear
     @onClear()

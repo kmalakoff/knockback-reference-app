@@ -4,7 +4,7 @@ _ = kb._; Backbone = kb.Backbone
 class window.Application
   constructor: ->
     # bind functions so they can be called from templates
-    _.bindAll(@, 'deleteAllThings', 'goToThings', 'setMode')
+    _.bindAll(@, 'goToThings', 'deleteAllThings', 'saveAllThings', 'setMode')
     @view_models = {}
     @collections = {}
 
@@ -32,6 +32,10 @@ class window.Application
 
   deleteAllThings: ->
     model.destroy() for model in _.clone(@collections.things.models)
+    @
+
+  saveAllThings: ->
+    (model.save() if model.hasChanged()) for model in @collections.things.models
     @
 
   setMode: (mode={}) ->
