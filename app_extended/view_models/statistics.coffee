@@ -17,7 +17,7 @@ class window.StatisticsViewModel
     @model_events_stats = ko.observable('none')
 
     # baseline stats
-    @memory_stats_available = ko.observable(performance and performance.memory and performance.memory.usedJSHeapSize)
+    @memory_stats_available = ko.observable(!!@_getHeapSize())
     @memory_start = ko.observable(@_getHeapSize())
     @memory_current = ko.observable(@memory_start())
     @memory_delta = ko.observable(0)
@@ -96,4 +96,4 @@ class window.StatisticsViewModel
       @memory_cycle_current(heap_size)
       @memory_cycle_delta(@memory_cycle_current()-@memory_cycle_start())
 
-  _getHeapSize: -> return performance?.memory?.usedJSHeapSize/(1024*1024)
+  _getHeapSize: -> return window.performance?.memory?.usedJSHeapSize/(1024*1024)

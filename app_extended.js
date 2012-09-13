@@ -220,7 +220,7 @@
       this.is_opened = ko.observable(false);
       this.observable_stats = ko.observable('none');
       this.model_events_stats = ko.observable('none');
-      this.memory_stats_available = ko.observable(performance && performance.memory && performance.memory.usedJSHeapSize);
+      this.memory_stats_available = ko.observable(!!this._getHeapSize());
       this.memory_start = ko.observable(this._getHeapSize());
       this.memory_current = ko.observable(this.memory_start());
       this.memory_delta = ko.observable(0);
@@ -311,8 +311,8 @@
     };
 
     StatisticsViewModel.prototype._getHeapSize = function() {
-      var _ref;
-      return (typeof performance !== "undefined" && performance !== null ? (_ref = performance.memory) != null ? _ref.usedJSHeapSize : void 0 : void 0) / (1024 * 1024);
+      var _ref, _ref1;
+      return ((_ref = window.performance) != null ? (_ref1 = _ref.memory) != null ? _ref1.usedJSHeapSize : void 0 : void 0) / (1024 * 1024);
     };
 
     return StatisticsViewModel;
