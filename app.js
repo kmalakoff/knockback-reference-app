@@ -12,7 +12,7 @@
   window.Application = (function() {
 
     function Application() {
-      _.bindAll(this, 'deleteAllThings', 'goToThings', 'setMode');
+      _.bindAll(this, 'deleteAllThings', 'saveAllThings', 'setMode');
       this.view_models = {};
       this.collections = {};
     }
@@ -37,16 +37,24 @@
       return this.statistics_el = this.view_models = null;
     };
 
-    Application.prototype.goToThings = function() {
-      return window.location.hash = 'things';
-    };
-
     Application.prototype.deleteAllThings = function() {
       var model, _i, _len, _ref;
       _ref = _.clone(this.collections.things.models);
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         model = _ref[_i];
         model.destroy();
+      }
+      return this;
+    };
+
+    Application.prototype.saveAllThings = function() {
+      var model, _i, _len, _ref;
+      _ref = this.collections.things.models;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        model = _ref[_i];
+        if (model.hasChanged()) {
+          model.save();
+        }
       }
       return this;
     };
@@ -237,13 +245,13 @@
           name: 'Welcome',
           url: '',
           goTo: function(vm) {
-            return window.location.hash = vm.url;
+            return kb.loadUrl(vm.url);
           }
         }, {
           name: 'Manage Things',
-          url: '#things',
+          url: 'things',
           goTo: function(vm) {
-            return window.location.hash = vm.url;
+            return kb.loadUrl(vm.url);
           }
         }
       ]);
@@ -275,8 +283,9 @@
         excludes: ['my_things']
       });
       this.my_things_select = ko.observableArray();
-      this.available_things = new ThingLinkCollectionObservable(app.collections.things, {
-        sort_attribute: 'name'
+      this.available_things = kb.collectionObservable(app.collections.things, {
+        sort_attribute: 'name',
+        view_model: ThingLinkViewModel
       });
       this.validations_filter_count = ko.observable(2);
       this.name_errors = ko.computed(function() {
@@ -308,7 +317,11 @@
         return kb.utils.wrappedModel(vm);
       }));
       app.collections.things.add(model);
-      model.save();
+      model.save(null, {
+        success: function() {
+          return _.defer(app.saveAllThings);
+        }
+      });
       return this.onClear();
     },
     onClear: function() {
@@ -343,15 +356,6 @@
         sort_attribute: 'name'
       });
       this.edit_mode = ko.observable(false);
-      this.goTo = function() {
-        return window.location.hash = "#things/" + (_this.id());
-      };
-      this.goBack = function() {
-        return kb.loadUrl('#things', {
-          name: 'NavigationSlide',
-          inverse: true
-        });
-      };
       this.name_errors = ko.computed(function() {
         var name;
         if (!(name = _this.name())) {
@@ -378,8 +382,13 @@
     onDelete: function() {
       var model;
       if ((model = kb.utils.wrappedObject(this))) {
-        return model.destroy();
+        model.destroy({
+          success: function() {
+            return _.defer(app.saveAllThings);
+          }
+        });
       }
+      return kb.loadUrl('things');
     },
     onSubmit: function() {
       var model;
@@ -390,7 +399,7 @@
         model.get('my_things').reset(_.map(this.my_things_select(), function(vm) {
           return kb.utils.wrappedModel(vm);
         }));
-        model.save();
+        app.saveAllThings();
       }
       return this.edit_mode(false);
     },
@@ -414,24 +423,11 @@
 
   window.ThingLinkViewModel = kb.ViewModel.extend({
     constructor: function(model, options) {
-      var _this = this;
       kb.ViewModel.prototype.constructor.call(this, model, {
         keys: ['name', 'id'],
         options: options
       });
-      this.goTo = function() {
-        return window.location.hash = "#things/" + (_this.id());
-      };
       return this;
-    }
-  });
-
-  window.ThingLinkCollectionObservable = kb.CollectionObservable.extend({
-    constructor: function(collection, options) {
-      return kb.CollectionObservable.prototype.constructor.call(this, collection, {
-        view_model: ThingLinkViewModel,
-        options: options
-      });
     }
   });
 
@@ -444,12 +440,6 @@
       view_model: ThingCellViewModel
     });
     this.new_thing = new NewThingViewModel();
-    this.goBack = function() {
-      return kb.loadUrl('#', {
-        name: 'NavigationSlide',
-        inverse: true
-      });
-    };
     return this;
   };
 

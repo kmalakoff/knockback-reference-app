@@ -55,7 +55,7 @@
         <p>This application provides a reference implementation for a simple Knockback.js application including routing, memory management, and pane and page transitions*. Enjoy!</p>
         <br/>
         <p>
-          <button class="btn btn-warning" data-bind="click: app.goToThings">Look at Things</button>
+          <button class="btn btn-warning" data-bind="click: kb.loadUrlFn('things')">Look at Things</button>
         </p>
         </br>
         <span>*<a href='http://kmalakoff.github.com/knockback-navigators/'>KnockbackNavigators.js</a> required</span>
@@ -69,7 +69,7 @@
     <div class='pane page'><div class='container'>
 
       <!-- * LINKS TO THINGS - TOP * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: goBack}}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: kb.loadUrlFn('', {name: 'NavigationSlide', inverse: true}) }}"></div>
 
       <!-- * ADD A THING * -->
       <div class="thumbnail form-actions">
@@ -85,12 +85,12 @@
       <!-- * ALL THINGS CELLS * -->
       <div class="row" data-bind="foreach: things">
         <div class='span6'>
-          <div class='cell thumbnail form-actions' data-bind="click: goTo, template: {name: 'thing_view', data: $data}"></div>
+          <div class='cell thumbnail form-actions' data-bind="click: kb.loadUrlFn('things/'+id()), template: {name: 'thing_view', data: $data}"></div>
         </div>
       </div>
 
       <!-- * LINKS TO THINGS - BOTTOM * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: goBack}}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: kb.loadUrlFn('', {name: 'NavigationSlide', inverse: true}) }}"></div>
 
     </div></div>
   </script>
@@ -103,13 +103,13 @@
 
       <div class="btn-group">
         <!-- * DELETE ALL BUTTON IF ON THINGS PAGE * -->
-        <!-- ko if: window.location.hash==='#things' -->
+        <!-- ko if: window.location.hash==='things' -->
           <button class='btn btn-small btn-inverse' data-bind="click: app.deleteAllThings">Delete All</button>
         <!-- /ko -->
 
         <!-- * BUTTON FOR EACH THING * -->
         <!-- ko foreach: links -->
-         <button class='btn btn-small btn-info' data-bind="click: goTo"><span data-bind="text: name"></span></button>
+         <button class='btn btn-small btn-info' data-bind="click: kb.loadUrlFn('things/'+id())"><span data-bind="text: name"></span></button>
         <!-- /ko -->
       </div>
 
@@ -121,7 +121,7 @@
     <div class='pane page'><div class='container'>
 
       <!-- * LINKS TO THINGS - TOP * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: goBack}}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: kb.loadUrlFn('things', {name: 'CoverVertical', inverse: true})}}"></div>
 
       <!-- ko if: is_loaded -->
         <div class='cell thumbnail form-actions' data-bind="template: {name: 'thing_view_embedded', data: $data}"></div>
@@ -183,7 +183,7 @@
       <div class='span3'>
         <legend data-bind="text: 'My Things (' + my_things().length + ')'"></legend>
         <div class="nav" data-bind="foreach: my_things">
-          <button class='btn btn-small btn-warning' data-bind="click: goTo, text: name"></button>
+          <button class='btn btn-small btn-warning' data-bind="click: kb.loadUrlFn('things/'+id()), text: name"></button>
         </div>
       </div>
 
@@ -254,15 +254,15 @@
   <script src="vendor/js/jquery-1.8.0.js"></script>
 
   <!-- Knockback -->
-  <script src="vendor/js/knockback-core-stack-0.16.4.js"></script>
+  <script src="vendor/js/knockback-core-stack-0.16.5.js"></script>
 
   <!-- Knockback optional libraries-->
   <script src="vendor/js/backbone-modelref-0.1.4.js"></script>
   <script src="vendor/js/backbone-relational-0.6.0.js"></script>
-  <script src="vendor/js/knockback-statistics-0.16.4.js"></script>
-  <script src="vendor/js/knockback-page-navigator-simple-0.1.0.js"></script>
-  <script src="vendor/js/knockback-page-navigator-panes-0.1.0.js"></script>
-  <script src="vendor/js/knockback-sample-transitions-0.1.0.js"></script>
+  <script src="vendor/js/knockback-statistics-0.16.5.js"></script>
+  <script src="vendor/js/knockback-page-navigator-simple-0.1.1.js"></script>
+  <script src="vendor/js/knockback-page-navigator-panes-0.1.1.js"></script>
+  <script src="vendor/js/knockback-sample-transitions-0.1.1.js"></script>
 
   <!-- App Dependencies -->
   <script src="vendor/js/backbone.localStorage.js"></script>
