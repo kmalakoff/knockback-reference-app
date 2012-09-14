@@ -21,5 +21,5 @@ module.exports =
 
       'cp -v knockback-navigators/knockback-page-navigator-panes.js vendor/js/knockback-page-navigator-panes.js'
       'cp -v knockback-navigators/knockback-page-navigator-simple.js vendor/js/knockback-page-navigator-simple.js'
-      'cp -v knockback-navigators/lib/knockback-sample-transitions.js vendor/js/knockback-sample-transitions.js'
+      'cp -v knockback-navigators/lib/knockback-sample-transitions-jquery.js vendor/js/knockback-sample-transitions-jquery.js'
     ]
