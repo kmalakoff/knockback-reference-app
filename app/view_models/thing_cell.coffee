@@ -30,7 +30,7 @@ window.ThingCellViewModel = kb.ViewModel.extend({
     @is_loaded = ko.observable(model and model.isLoaded())
     @_onModelLoaded = (m) => @start_attributes = m.toJSON(); @is_loaded(true)
     not model or model.bindLoadingStates(@_onModelLoaded)
-    @
+    return
 
   onEdit: ->
     @my_things_select(@my_things())

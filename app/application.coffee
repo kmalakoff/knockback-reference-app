@@ -29,11 +29,11 @@ class window.Application
 
   deleteAllThings: ->
     model.destroy() for model in _.clone(@collections.things.models)
-    @
+    return
 
   saveAllThings: ->
     (model.save() if model.hasChanged()) for model in @collections.things.models
-    @
+    return
 
   setMode: (mode={}) ->
 
@@ -61,4 +61,4 @@ class window.Application
 
     # start or update routing
     if Backbone.History.started then Backbone.history.loadUrl(window.location.hash) else Backbone.history.start({hashChange: true})
-    @
+    return

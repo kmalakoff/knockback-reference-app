@@ -44,7 +44,6 @@
         model = _ref[_i];
         model.destroy();
       }
-      return this;
     };
 
     Application.prototype.saveAllThings = function() {
@@ -56,7 +55,6 @@
           model.save();
         }
       }
-      return this;
     };
 
     Application.prototype.setMode = function(mode) {
@@ -95,7 +93,6 @@
           hashChange: true
         });
       }
-      return this;
     };
 
     return Application;
@@ -119,7 +116,6 @@
           $(element).removeClass(key);
         }
       }
-      return this;
     }
   };
 
@@ -303,7 +299,6 @@
           return errors;
         }
       });
-      return this;
     },
     onAdd: function() {
       var model;
@@ -373,7 +368,6 @@
         return _this.is_loaded(true);
       };
       !model || model.bindLoadingStates(this._onModelLoaded);
-      return this;
     },
     onEdit: function() {
       this.my_things_select(this.my_things());
@@ -427,7 +421,6 @@
         keys: ['name', 'id'],
         options: options
       });
-      return this;
     }
   });
 
@@ -440,7 +433,6 @@
       view_model: ThingCellViewModel
     });
     this.new_thing = new NewThingViewModel();
-    return this;
   };
 
 }).call(this);

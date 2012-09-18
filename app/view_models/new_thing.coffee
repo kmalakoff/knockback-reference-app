@@ -20,7 +20,7 @@ window.NewThingViewModel = kb.ViewModel.extend({
         errors = "#{name} already taken"
       return if utils.decrementClampedObservable(@validations_filter_count) then '' else errors
     )
-    @
+    return
 
   onAdd: ->
     $('*:focus').blur() # force focus change so validations occur
