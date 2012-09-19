@@ -1,5 +1,5 @@
 /*
-  knockback-core-stack.js 0.16.6
+  knockback-full-stack.js 0.16.6
   (c) 2011, 2012 Kevin Malakoff - http://kmalakoff.github.com/knockback/
   License: MIT (http://www.opensource.org/licenses/mit-license.php)
   Dependencies: Knockout.js, Backbone.js, and Underscore.js.
@@ -5938,7 +5938,7 @@ ko.exportSymbol('nativeTemplateEngine', ko.nativeTemplateEngine);
 });
 })(window,document,navigator);
 /*
-  knockback-core.js 0.16.6
+  knockback.js 0.16.6 (full version)
   (c) 2011, 2012 Kevin Malakoff - http://kmalakoff.github.com/knockback/
   License: MIT (http://www.opensource.org/licenses/mit-license.php)
   Dependencies: Knockout.js, Backbone.js, and Underscore.js.
@@ -5963,7 +5963,7 @@ ko.exportSymbol('nativeTemplateEngine', ko.nativeTemplateEngine);
   Dependencies: Knockout.js, Backbone.js, and Underscore.js.
 */
 
-var Backbone, KB_TYPE_ARRAY, KB_TYPE_COLLECTION, KB_TYPE_MODEL, KB_TYPE_SIMPLE, KB_TYPE_UNKNOWN, addStatisticsEvent, arraySplice, collapseOptions, kb, ko, legacyWarning, onReady, throwMissing, throwUnexpected, _, _argumentsAddKey, _unwrapModels, _wrappedKey,
+var Backbone, EMAIL_REGEXP, INPUT_RESERVED_IDENTIFIERS, KB_TYPE_ARRAY, KB_TYPE_COLLECTION, KB_TYPE_MODEL, KB_TYPE_SIMPLE, KB_TYPE_UNKNOWN, NUMBER_REGEXP, URL_REGEXP, addStatisticsEvent, arraySlice, arraySplice, collapseOptions, kb, ko, legacyWarning, onReady, throwMissing, throwUnexpected, _, _argumentsAddKey, _unwrapModels, _wrappedKey,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 kb = (function() {
@@ -7761,5 +7761,528 @@ if (this.$) {
     return kb.injectViewModels();
   })();
 }
+
+/*
+  knockback_default_observable.js 0.16.6
+  (c) 2011, 2012 Kevin Malakoff.
+  Knockback.DefaultObservable is freely distributable under the MIT license.
+  See the following for full license details:
+    https://github.com/kmalakoff/knockback/blob/master/LICENSE
+*/
+
+
+kb.DefaultObservable = (function() {
+
+  function DefaultObservable(target_observable, dv) {
+    var observable,
+      _this = this;
+    this.dv = dv;
+    observable = kb.utils.wrappedObservable(this, ko.dependentObservable({
+      read: function() {
+        var current_target;
+        if ((current_target = ko.utils.unwrapObservable(target_observable()))) {
+          return current_target;
+        } else {
+          return ko.utils.unwrapObservable(_this.dv);
+        }
+      },
+      write: function(value) {
+        return target_observable(value);
+      }
+    }));
+    observable.destroy = _.bind(this.destroy, this);
+    observable.setToDefault = _.bind(this.setToDefault, this);
+    return observable;
+  }
+
+  DefaultObservable.prototype.destroy = function() {
+    return kb.utils.wrappedDestroy(this);
+  };
+
+  DefaultObservable.prototype.setToDefault = function() {
+    return kb.utils.wrappedObservable(this)(this.dv);
+  };
+
+  return DefaultObservable;
+
+})();
+
+kb.defaultObservable = function(target, default_value) {
+  return new kb.DefaultObservable(target, default_value);
+};
+
+kb.defaultWrapper = function(target, default_value) {
+  legacyWarning('ko.defaultWrapper', '0.16.3', 'Please use kb.defaultObservable instead');
+  return new kb.DefaultObservable(target, default_value);
+};
+
+/*
+  knockback-extensions.js (knockback-defaults)
+  (c) 2011, 2012 Kevin Malakoff.
+  Knockback.js is freely distributable under the MIT license.
+  See the following for full license details:
+    https://github.com/kmalakoff/knockback/blob/master/LICENSE
+  Dependencies: Knockout.js, Backbone.js, and Underscore.js.
+    Optional dependency: Backbone.ModelRef.js.
+*/
+
+
+kb.Observable.prototype.setToDefault = function() {
+  var _ref;
+  if ((_ref = this.__kb_value) != null) {
+    if (typeof _ref.setToDefault === "function") {
+      _ref.setToDefault();
+    }
+  }
+};
+
+kb.ViewModel.prototype.setToDefault = function() {
+  var vm_key, _ref;
+  for (vm_key in this.__kb.vm_keys) {
+    if ((_ref = this[vm_key]) != null) {
+      if (typeof _ref.setToDefault === "function") {
+        _ref.setToDefault();
+      }
+    }
+  }
+};
+
+kb.utils.setToDefault = function(obj) {
+  var key, value;
+  if (!obj) {
+    return;
+  }
+  if (ko.isObservable(obj)) {
+    if (typeof obj.setToDefault === "function") {
+      obj.setToDefault();
+    }
+  } else if (_.isObject(obj)) {
+    for (key in obj) {
+      value = obj[key];
+      if (value && (ko.isObservable(value) || (typeof value !== 'function')) && ((key[0] !== '_') || key.search('__kb'))) {
+        this.setToDefault(value);
+      }
+    }
+  }
+  return obj;
+};
+
+/*
+  knockback-formatted-observable.js 0.16.6
+  (c) 2011, 2012 Kevin Malakoff.
+  Knockback.FormattedObservable is freely distributable under the MIT license.
+  See the following for full license details:
+    https://github.com/kmalakoff/knockback/blob/master/LICENSE
+*/
+
+
+arraySlice = Array.prototype.slice;
+
+kb.toFormattedString = function(format) {
+  var arg, args, index, parameter_index, result, value;
+  result = format.slice();
+  args = arraySlice.call(arguments, 1);
+  for (index in args) {
+    arg = args[index];
+    value = ko.utils.unwrapObservable(arg);
+    value || (value = '');
+    parameter_index = format.indexOf("\{" + index + "\}");
+    while (parameter_index >= 0) {
+      result = result.replace("{" + index + "}", value);
+      parameter_index = format.indexOf("\{" + index + "\}", parameter_index + 1);
+    }
+  }
+  return result;
+};
+
+kb.parseFormattedString = function(string, format) {
+  var count, format_indices_to_matched_indices, index, match_index, matches, parameter_count, parameter_index, positions, regex, regex_string, result, results, sorted_positions;
+  regex_string = format.slice();
+  index = 0;
+  parameter_count = 0;
+  positions = {};
+  while (regex_string.search("\\{" + index + "\\}") >= 0) {
+    parameter_index = format.indexOf("\{" + index + "\}");
+    while (parameter_index >= 0) {
+      regex_string = regex_string.replace("\{" + index + "\}", '(.*)');
+      positions[parameter_index] = index;
+      parameter_count++;
+      parameter_index = format.indexOf("\{" + index + "\}", parameter_index + 1);
+    }
+    index++;
+  }
+  count = index;
+  regex = new RegExp(regex_string);
+  matches = regex.exec(string);
+  if (matches) {
+    matches.shift();
+  }
+  if (!matches || (matches.length !== parameter_count)) {
+    result = [];
+    while (count-- > 0) {
+      result.push('');
+    }
+    return result;
+  }
+  sorted_positions = _.sortBy(_.keys(positions), function(parameter_index, format_index) {
+    return parseInt(parameter_index, 10);
+  });
+  format_indices_to_matched_indices = {};
+  for (match_index in sorted_positions) {
+    parameter_index = sorted_positions[match_index];
+    index = positions[parameter_index];
+    if (format_indices_to_matched_indices.hasOwnProperty(index)) {
+      continue;
+    }
+    format_indices_to_matched_indices[index] = match_index;
+  }
+  results = [];
+  index = 0;
+  while (index < count) {
+    results.push(matches[format_indices_to_matched_indices[index]]);
+    index++;
+  }
+  return results;
+};
+
+kb.FormattedObservable = (function() {
+
+  function FormattedObservable(format, args) {
+    var observable, observable_args;
+    if (_.isArray(args)) {
+      format = format;
+      observable_args = args;
+    } else {
+      observable_args = arraySlice.call(arguments, 1);
+    }
+    observable = kb.utils.wrappedObservable(this, ko.dependentObservable({
+      read: function() {
+        var arg, _i, _len;
+        args = [ko.utils.unwrapObservable(format)];
+        for (_i = 0, _len = observable_args.length; _i < _len; _i++) {
+          arg = observable_args[_i];
+          args.push(ko.utils.unwrapObservable(arg));
+        }
+        return kb.toFormattedString.apply(null, args);
+      },
+      write: function(value) {
+        var index, matches, max_count;
+        matches = kb.parseFormattedString(value, ko.utils.unwrapObservable(format));
+        max_count = Math.min(observable_args.length, matches.length);
+        index = 0;
+        while (index < max_count) {
+          observable_args[index](matches[index]);
+          index++;
+        }
+      }
+    }));
+    return observable;
+  }
+
+  FormattedObservable.prototype.destroy = function() {
+    return kb.utils.wrappedDestroy(this);
+  };
+
+  return FormattedObservable;
+
+})();
+
+kb.formattedObservable = function(format, args) {
+  return new kb.FormattedObservable(format, arraySlice.call(arguments, 1));
+};
+
+/*
+  knockback-localized-observable.js 0.16.6
+  (c) 2011, 2012 Kevin Malakoff.
+  Knockback.LocalizedObservable is freely distributable under the MIT license.
+  See the following for full license details:
+    https://github.com/kmalakoff/knockback/blob/master/LICENSE
+*/
+
+
+kb.LocalizedObservable = (function() {
+
+  LocalizedObservable.extend = Backbone.Model.extend;
+
+  function LocalizedObservable(value, options, vm) {
+    var observable,
+      _this = this;
+    this.value = value;
+    this.vm = vm;
+    options || (options = {});
+    this.vm || (this.vm = {});
+    this.read || throwMissing(this, 'read');
+    kb.locale_manager || throwMissing(this, 'kb.locale_manager');
+    this.__kb || (this.__kb = {});
+    this.__kb._onLocaleChange = _.bind(this._onLocaleChange, this);
+    this.__kb._onChange = options.onChange;
+    if (this.value) {
+      value = ko.utils.unwrapObservable(this.value);
+    }
+    this.vo = ko.observable(!value ? null : this.read(value, null));
+    observable = kb.utils.wrappedObservable(this, ko.dependentObservable({
+      read: function() {
+        if (_this.value) {
+          ko.utils.unwrapObservable(_this.value);
+        }
+        _this.vo();
+        return _this.read(ko.utils.unwrapObservable(_this.value));
+      },
+      write: function(value) {
+        _this.write || throwUnexpected(_this, 'writing to read-only');
+        _this.write(value, ko.utils.unwrapObservable(_this.value));
+        _this.vo(value);
+        if (_this.__kb._onChange) {
+          return _this.__kb._onChange(value);
+        }
+      },
+      owner: this.vm
+    }));
+    observable.destroy = _.bind(this.destroy, this);
+    observable.observedValue = _.bind(this.observedValue, this);
+    observable.resetToCurrent = _.bind(this.resetToCurrent, this);
+    kb.locale_manager.bind('change', this.__kb._onLocaleChange);
+    if (options.hasOwnProperty('default')) {
+      observable = kb.DefaultObservable && ko.defaultObservable(observable, options["default"]);
+    }
+    return observable;
+  }
+
+  LocalizedObservable.prototype.destroy = function() {
+    kb.locale_manager.unbind('change', this.__kb._onLocaleChange);
+    this.vm = null;
+    return kb.utils.wrappedDestroy(this);
+  };
+
+  LocalizedObservable.prototype.resetToCurrent = function() {
+    var current_value, observable;
+    observable = kb.utils.wrappedObservable(this);
+    current_value = this.value ? this.read(ko.utils.unwrapObservable(this.value)) : null;
+    if (observable() === current_value) {
+      return;
+    }
+    return observable(current_value);
+  };
+
+  LocalizedObservable.prototype.observedValue = function(value) {
+    if (arguments.length === 0) {
+      return this.value;
+    }
+    this.value = value;
+    this._onLocaleChange();
+  };
+
+  LocalizedObservable.prototype._onLocaleChange = function() {
+    var value;
+    value = this.read(ko.utils.unwrapObservable(this.value));
+    this.vo(value);
+    if (this.__kb._onChange) {
+      return this.__kb._onChange(value);
+    }
+  };
+
+  return LocalizedObservable;
+
+})();
+
+kb.localizedObservable = function(value, options, view_model) {
+  return new kb.LocalizedObservable(value, options, view_model);
+};
+
+/*
+  knockback-extensions.js (knockback-localization)
+  (c) 2011, 2012 Kevin Malakoff.
+  Knockback.js is freely distributable under the MIT license.
+  See the following for full license details:
+    https://github.com/kmalakoff/knockback/blob/master/LICENSE
+  Dependencies: Knockout.js, Backbone.js, and Underscore.js.
+    Optional dependency: Backbone.ModelRef.js.
+*/
+
+
+kb.locale_manager = void 0;
+
+/*
+  knockback-triggered-observable.js 0.16.6
+  (c) 2011, 2012 Kevin Malakoff.
+  Knockback.Observable is freely distributable under the MIT license.
+  See the following for full license details:
+    https://github.com/kmalakoff/knockback/blob/master/LICENSE
+*/
+
+
+kb.TriggeredObservable = (function() {
+
+  function TriggeredObservable(model, event_name) {
+    var observable,
+      _this = this;
+    this.event_name = event_name;
+    model || throwMissing(this, 'model');
+    this.event_name || throwMissing(this, 'event_name');
+    this.vo = ko.observable();
+    observable = kb.utils.wrappedObservable(this, ko.dependentObservable(function() {
+      return _this.vo();
+    }));
+    observable.destroy = _.bind(this.destroy, this);
+    kb.utils.wrappedModelWatcher(this, new kb.ModelWatcher(model, this, {
+      model: _.bind(this.model, this),
+      update: _.bind(this.update, this),
+      event_name: this.event_name
+    }));
+    return observable;
+  }
+
+  TriggeredObservable.prototype.destroy = function() {
+    return kb.utils.wrappedDestroy(this);
+  };
+
+  TriggeredObservable.prototype.model = function(new_model) {
+    if ((arguments.length === 0) || (this.m === new_model)) {
+      return this.m;
+    }
+    if ((this.m = new_model)) {
+      return this.update();
+    }
+  };
+
+  TriggeredObservable.prototype.update = function() {
+    if (!this.m) {
+      return;
+    }
+    if (this.vo() !== this.m) {
+      return this.vo(this.m);
+    } else {
+      return this.vo.valueHasMutated();
+    }
+  };
+
+  return TriggeredObservable;
+
+})();
+
+kb.triggeredObservable = function(model, event_name) {
+  return new kb.TriggeredObservable(model, event_name);
+};
+
+/*
+  knockback-validators.js 0.16.6
+  (c) 2011, 2012 Kevin Malakoff.
+  Knockback.Observable is freely distributable under the MIT license.
+  See the following for full license details:
+    https://github.com/kmalakoff/knockback/blob/master/LICENSE
+*/
+
+
+URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
+
+EMAIL_REGEXP = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/;
+
+NUMBER_REGEXP = /^\s*(\-|\+)?(\d+|(\d*(\.\d*)))\s*$/;
+
+INPUT_RESERVED_IDENTIFIERS = ['value', 'valueUpdate', 'inject'];
+
+kb.validators = {
+  required: function(value) {
+    return !!value;
+  },
+  url: function(value) {
+    return !!URL_REGEXP.test(value);
+  },
+  email: function(value) {
+    return !!EMAIL_REGEXP.test(value);
+  },
+  number: function(value) {
+    return !!NUMBER_REGEXP.test(value);
+  }
+};
+
+kb.valueValidator = function(value, bindings) {
+  return ko.dependentObservable(function() {
+    var current_value, identifier, results, validator;
+    results = {
+      valid: true
+    };
+    current_value = ko.utils.unwrapObservable(value);
+    for (identifier in bindings) {
+      validator = bindings[identifier];
+      results[identifier] = !validator(current_value);
+      results.valid &= !results[identifier];
+    }
+    results.valid = !!results.valid;
+    results.invalid = !results.valid;
+    return results;
+  });
+};
+
+kb.inputValidator = function(view_model, el, value_accessor) {
+  var $input_el, bindings, identifier, input_name, options, result, skip_attach, type, validator;
+  $input_el = $(el);
+  if ((input_name = $input_el.attr('name')) && !_.isString(input_name)) {
+    input_name = null;
+  }
+  skip_attach = value_accessor && value_accessor.skip_attach;
+  if (!(bindings = $input_el.attr('data-bind'))) {
+    return null;
+  }
+  options = (new Function("sc", "with(sc[0]) { return { " + bindings + " } }"))([view_model]);
+  if (!(options && options.value)) {
+    return null;
+  }
+  bindings = {};
+  if (kb.validators[type = $input_el.attr('type')]) {
+    bindings[type] = kb.validators[type];
+  }
+  if ($input_el.attr('required')) {
+    bindings.required = kb.validators.required;
+  }
+  for (identifier in options) {
+    validator = options[identifier];
+    if (!_.contains(INPUT_RESERVED_IDENTIFIERS, identifier) && (typeof validator === 'function')) {
+      bindings[identifier] = validator;
+    }
+  }
+  result = kb.valueValidator(options.value, bindings);
+  if (input_name && !skip_attach) {
+    view_model["$" + input_name] = result;
+  }
+  return result;
+};
+
+kb.formValidator = function(view_model, el) {
+  var $root_el, form_name, input_el, name, results, validator, validators, _i, _len, _ref;
+  results = {};
+  validators = [];
+  $root_el = $(el);
+  if ((form_name = $root_el.attr('name')) && !_.isString(form_name)) {
+    form_name = null;
+  }
+  _ref = $root_el.find('input');
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    input_el = _ref[_i];
+    if (!(name = $(input_el).attr('name'))) {
+      continue;
+    }
+    validator = kb.inputValidator(view_model, input_el, form_name ? {
+      skip_attach: true
+    } : null);
+    !validator || validators.push(results[name] = validator);
+  }
+  results.valid = ko.dependentObservable(function() {
+    var valid, _j, _len1;
+    valid = true;
+    for (_j = 0, _len1 = validators.length; _j < _len1; _j++) {
+      validator = validators[_j];
+      valid &= validator().valid;
+    }
+    return valid;
+  });
+  results.invalid = ko.dependentObservable(function() {
+    return !results.valid();
+  });
+  if (form_name) {
+    view_model["$" + form_name] = results;
+  }
+  return results;
+};
 ; return kb;});
 }).call(this);

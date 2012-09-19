@@ -11,12 +11,14 @@ window.NewThingViewModel = kb.ViewModel.extend({
     @my_things_select = ko.observableArray()
     @available_things = kb.collectionObservable(app.collections.things, {sort_attribute: 'name', view_model: ThingLinkViewModel})
 
+    # validations
+    @start_attributes = model.toJSON()
+    trigger = kb.triggeredObservable(model, 'change')
+    @is_clean = ko.computed(=> trigger(); _.isEqual(model.toJSON(), @start_attributes))
     @is_unique = => return !_.find(app.collections.things.models, (test) => (test isnt @model()) and test.get('name') is @name())
     return
 
   onSubmit: ->
-    return if @$name().invalid # errors
-
     # add to the collection and save
     model = kb.utils.wrappedObject(@)
     model.get('my_things').reset(_.map(@my_things_select(), (vm) -> kb.utils.wrappedModel(vm))) # add the relationships now that they are decided

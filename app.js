@@ -55,17 +55,6 @@
     }
   };
 
-  window.utils || (window.utils = {});
-
-  window.utils.decrementClampedObservable = function(observable) {
-    var value;
-    value = observable();
-    if (value > 0) {
-      observable(--value);
-    }
-    return value;
-  };
-
   window.Thing = Backbone.RelationalModel.extend({
     url: function() {
       return "things/" + (this.get('id'));
@@ -258,7 +247,7 @@
 
   window.NewThingViewModel = kb.ViewModel.extend({
     constructor: function() {
-      var model,
+      var model, trigger,
         _this = this;
       _.bindAll(this, 'onSubmit', 'onClear');
       kb.ViewModel.prototype.constructor.call(this, model = new Thing(), {
@@ -270,6 +259,12 @@
         sort_attribute: 'name',
         view_model: ThingLinkViewModel
       });
+      this.start_attributes = model.toJSON();
+      trigger = kb.triggeredObservable(model, 'change');
+      this.is_clean = ko.computed(function() {
+        trigger();
+        return _.isEqual(model.toJSON(), _this.start_attributes);
+      });
       this.is_unique = function() {
         return !_.find(app.collections.things.models, function(test) {
           return (test !== _this.model()) && test.get('name') === _this.name();
@@ -278,9 +273,6 @@
     },
     onSubmit: function() {
       var model;
-      if (this.$name().invalid) {
-        return;
-      }
       model = kb.utils.wrappedObject(this);
       model.get('my_things').reset(_.map(this.my_things_select(), function(vm) {
         return kb.utils.wrappedModel(vm);
@@ -301,7 +293,8 @@
 
   window.ThingCellViewModel = kb.ViewModel.extend({
     constructor: function(model, options) {
-      var _this = this;
+      var trigger,
+        _this = this;
       kb.ViewModel.prototype.constructor.call(this, model, {
         requires: ['id', 'name', 'caption', 'my_things', 'my_owner'],
         factories: {
@@ -324,6 +317,11 @@
         sort_attribute: 'name'
       });
       this.edit_mode = ko.observable(false);
+      trigger = kb.triggeredObservable(model, 'change');
+      this.is_clean = ko.computed(function() {
+        trigger();
+        return _.isEqual(model.toJSON(), _this.start_attributes);
+      });
       this.is_unique = function() {
         return !_.find(app.collections.things.models, function(test) {
           return (test !== _this.model()) && test.get('name') === _this.name();
@@ -354,9 +352,6 @@
     },
     onSubmit: function() {
       var model;
-      if (this.$name().invalid) {
-        return;
-      }
       if ((model = kb.utils.wrappedObject(this))) {
         model.get('my_things').reset(_.map(this.my_things_select(), function(vm) {
           return kb.utils.wrappedModel(vm);

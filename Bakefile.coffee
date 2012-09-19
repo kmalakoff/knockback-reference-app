@@ -12,7 +12,7 @@ module.exports =
   _postinstall:
     commands: [
       # knockback dependencies
-      'cp -v knockback/knockback-core-stack.js vendor/js/knockback-core-stack.js'
+      'cp -v knockback/knockback-full-stack.js vendor/js/knockback-full-stack.js'
       'cp -v knockback/lib/knockback-validation.js vendor/js/knockback-validation.js'
 
       # knockback optional libraries

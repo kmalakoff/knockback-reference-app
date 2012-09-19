@@ -204,15 +204,15 @@
     <div class='row'>
 
       <!-- * MY INFORMATION * -->
-      <div class='span6'>
+      <div class='span8'>
         <legend>Me</legend>
         <form class="form-horizontal" data-bind="inject: kb.formValidator">
 
-          <div class="control-group" data-bind="classes: {error: $name().invalid}">
+          <div class="control-group" data-bind="classes: {error: !is_clean() && $name().invalid}">
             <label class="control-label">Name</label>
             <input type="text" name="name" data-bind="value: name, valueUpdate: 'keyup', unique: is_unique" required>
-            <span data-bind="visible: $name().required" class="help-inline">Things like names</span>
-            <span data-bind="visible: !$name().required() && $name().unique(), text: name() +' already taken'" class="help-inline"></span>
+            <span data-bind="visible: !is_clean() && $name().required" class="help-inline">Things like names</span>
+            <span data-bind="visible: !is_clean() && !$name().required && $name().unique, text: name() +' already taken'" class="help-inline"></span>
           </div>
 
           <div class="control-group">
@@ -223,7 +223,7 @@
       </div>
 
       <!-- * MY THINGS SELECTOR * -->
-      <div class='span5'>
+      <div class='span3'>
         <legend data-bind="text: 'My Things (' + my_things_select().length + ')'"></legend>
         <select multiple="multiple" data-bind="options: available_things, optionsText: 'name', selectedOptions: my_things_select"></select>
       </div>
@@ -234,8 +234,7 @@
   <script src="vendor/js/jquery-1.8.0.js"></script>
 
   <!-- Knockback and optional libraries-->
-  <script src="vendor/js/knockback-core-stack-0.16.6.js"></script>
-  <script src="vendor/js/knockback-validation-0.16.6.js"></script>
+  <script src="vendor/js/knockback-full-stack-0.16.6.js"></script>
   <script src="vendor/js/backbone-modelref-0.1.5.js"></script>
   <script src="vendor/js/backbone-relational-0.6.0.js"></script>
   <script src="vendor/js/knockback-statistics-0.16.6.js"></script>
