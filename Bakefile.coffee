@@ -4,10 +4,15 @@ module.exports =
     output: '..'
     directories: 'app'
 
-  app_extended:
-    join: 'app_extended.js'
+  app_management:
+    join: 'app-management.js'
     output: '..'
-    directories: 'app_extended'
+    directories: 'app_management'
+
+  app_navigators:
+    join: 'app-navigators.js'
+    output: '..'
+    directories: 'app_navigators'
 
   _postinstall:
     commands: [
@@ -20,6 +25,6 @@ module.exports =
       'cp -v knockback/lib/knockback-statistics.js vendor/js/knockback-statistics.js'
 
       'cp -v knockback-navigators/knockback-page-navigator-panes.js vendor/js/knockback-page-navigator-panes.js'
-      'cp -v knockback-navigators/knockback-page-navigator-simple.js vendor/js/knockback-page-navigator-simple.js'
       'cp -v knockback-navigators/lib/knockback-sample-transitions-jquery.js vendor/js/knockback-sample-transitions-jquery.js'
+      'cp -v knockback-navigators/knockback-navigators.css vendor/css/knockback-navigators.css'
     ]

@@ -1,10 +1,10 @@
-window.toFixed = (value, precision) ->
-    power = Math.pow(10, precision || 0);
-    return String(Math.round(value * power) / power);
-
 STATS_UPDATE_INTERVAL = 1000
 CYCLE_COUNT = 20
 CYCLE_INTERVAL = 10
+
+window.toFixed = (value, precision) ->
+  power = Math.pow(10, precision || 0);
+  return String(Math.round(value * power) / power);
 
 class window.StatisticsViewModel
   constructor: ->

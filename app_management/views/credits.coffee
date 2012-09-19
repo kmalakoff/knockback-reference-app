@@ -1,4 +1,4 @@
-window.CreditsView = """
+template_engine.templates.credits = """
   <div data-bind="visible: credits_is_opened">
     <div class='modal-backdrop'></div>
     <div class="modal" data-bind="fadeIn: credits_is_opened"><div class="modal-body">

@@ -1,4 +1,4 @@
-window.StatisticsView = """
+template_engine.templates.statistics = """
   <div data-bind="visible: is_opened">
 
     <div class='modal-backdrop'></div>
@@ -42,7 +42,7 @@ window.StatisticsView = """
         <p data-bind="text: model_events_stats"></p>
         <form class="form-horizontal">
           <button class='btn btn-small' data-bind="click: cyclePages">Cycle Pages</button>
-          <button class='btn btn-small' data-bind="click: function(){app.setMode({no_app: true});}">Release Application</button>
+          <button class='btn btn-small' data-bind="click: kb.loadUrlFn('no_app')">Release Application</button>
         </form>
         <form class="form-horizontal">
           <div class="control-group">

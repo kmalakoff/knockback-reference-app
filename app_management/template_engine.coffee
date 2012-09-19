@@ -10,15 +10,10 @@ class TemplateSource
 class window.TemplateEngine extends ko.nativeTemplateEngine
   constructor: ->
     @allowTemplateRewriting = false
-    @views =
-      # extensions to existing views
-      thing_view_extended: ThingViewExtendedView
-
-      # application management
-      app_management: AppManagementView
-      credits: CreditsView
-      statistics: StatisticsView
+    @templates = {}
 
   makeTemplateSource: (template_name) ->
-    return new TemplateSource(@views[template_name]) if @views.hasOwnProperty(template_name)
+    return new TemplateSource(@templates[template_name]) if @templates.hasOwnProperty(template_name)
     return super
+
+ko.setTemplateEngine(window.template_engine = new TemplateEngine()) # register the template engine that holds View strings

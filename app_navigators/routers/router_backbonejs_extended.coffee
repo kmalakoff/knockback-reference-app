@@ -23,9 +23,4 @@ window.RouterBackboneJSExtendedNoCache = Backbone.Router.extend({
         transition: 'CoverVertical'
       })
     ))
-
-  destroy: ->
-    @active_el = null
-    handlers = Backbone.history.handlers
-    handlers.splice(0, handlers.length)  # remove routes
 })

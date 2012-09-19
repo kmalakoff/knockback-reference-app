@@ -23,7 +23,6 @@ window.NewThingViewModel = kb.ViewModel.extend({
     return
 
   onAdd: ->
-    $('*:focus').blur() # force focus change so validations occur
     @validations_filter_count(0)
     return if @name_errors() # errors
 

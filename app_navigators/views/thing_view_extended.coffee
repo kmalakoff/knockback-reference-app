@@ -17,7 +17,7 @@ window.ThingViewExtendedView = """
       <div style='position: relative; min-height: 180px'>
         <div class='pane-navigator' data-bind="PaneNavigator: {transition: 'NavigationSlide'}, foreach: my_things">
           <div class='pane'>
-            <div class='cell thumbnail form-actions' data-bind="click: kb.loadUrlFn('things/'+id()), template: {name: 'thing_view', data: $data}"></div>
+            <div class='cell thumbnail form-actions' data-bind="click: kb.loadUrlFn('things/'+id()), template: 'thing_view'"></div>
           </div>
         </div>
       </div>

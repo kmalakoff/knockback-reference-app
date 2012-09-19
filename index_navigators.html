@@ -4,15 +4,17 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Knockback.js Reference App</title>
+  <title>Knockback.js Reference App (Navigators)</title>
   <link rel="stylesheet" href="vendor/css/normalize.css">
   <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.css">
   <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-responsive.css">
 
+  <link rel="stylesheet" href="vendor/css/knockback-navgigators.css">
   <style type="text/css">
     /* responsive header sizing */
-    .pane-navigator.page  {margin-top: 60px;}
-    @media (max-width: 975px) { .pane-navigator.page  {margin-top: 20px;} }
+    @media (max-width: 975px) { .pane-navigator.page  {top: 100px;} }
+    @media (max-width: 769px) { .pane-navigator.page  {top: 110px;} }
+    @media (max-width: 510px) { .pane-navigator.page  {top: 150px;} }
 
     /* cell styling */
     .cell                 {color: grey; min-height: 120px;}
@@ -24,34 +26,9 @@
 </head>
 <body>
 
-  <!-- THE APP -->
-  <section kb-inject="AppViewModel">
-    <header data-bind="template: 'page_header'"></header>
-    <section class='pane-navigator page'></section>
-    <section data-bind="template: {name: 'statistics', data: statistics}"></section>
-  </section>
-
-  <!-- TEMPLATE - HEADER -->
-  <script type="text/x-jquery-tmpl" id="page_header">
-    <div class="navbar navbar-fixed-top navbar-inverse"><div class="navbar-inner"><div class="container">
-
-      <ul class="nav">
-
-        <li><a class='brand' href="https://github.com/kmalakoff/knockback-reference-app/">Knockback.js Reference App</a></li>
-
-        <!-- * NAVIGATION ITEMS * -->
-        <!-- ko foreach: nav_items -->
-          <li data-bind="css: {active: $parent.active_url()===url}"><a data-bind="text: name, click: goTo"></a></li>
-        <!-- /ko -->
-
-      </ul>
-
-      <!-- * APPLICATION MANAGEMENT AND CREDITS * -->
-      <div data-bind="template: 'management'"></div>
-      <div data-bind="template: 'credits'"></div>
-
-    </div></div></div>
-  </script>
+  <!-- THE PAGE -->
+  <header data-bind="template: {name: 'page_header', data: $data}" kb-inject="HeaderViewModel"></header>
+  <section class='pane-navigator page' kb-inject="AppViewModel"></section>
 
   <!-- PAGE TEMPLATE - HOME -->
   <script type="text/x-jquery-tmpl" id="home">
@@ -78,7 +55,7 @@
     <div class='pane page'><div class='container'>
 
       <!-- * LINKS TO THINGS - TOP * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: kb.loadUrlFn('') }}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: kb.loadUrlFn('', {name: 'NavigationSlide', inverse: true}) }}"></div>
 
       <!-- * ADD A THING * -->
       <div class="thumbnail form-actions">
@@ -94,12 +71,12 @@
       <!-- * ALL THINGS CELLS * -->
       <div class="row" data-bind="foreach: things">
         <div class='span6'>
-          <div class='cell thumbnail form-actions' data-bind="click: kb.loadUrlFn('things/'+id()), template: 'thing_view'"></div>
+          <div class='cell thumbnail form-actions' data-bind="click: kb.loadUrlFn('things/'+id()), template: {name: 'thing_view', data: $data}"></div>
         </div>
       </div>
 
       <!-- * LINKS TO THINGS - BOTTOM * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: kb.loadUrlFn('') }}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: kb.loadUrlFn('', {name: 'NavigationSlide', inverse: true}) }}"></div>
 
     </div></div>
   </script>
@@ -130,10 +107,10 @@
     <div class='pane page'><div class='container'>
 
       <!-- * LINKS TO THINGS - TOP * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: kb.loadUrlFn('things')}}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: kb.loadUrlFn('things', {name: 'CoverVertical', inverse: true})}}"></div>
 
       <!-- ko if: is_loaded -->
-        <div class='cell thumbnail form-actions' data-bind="template: 'thing_view_embedded'"></div>
+        <div class='cell thumbnail form-actions' data-bind="template: {name: 'thing_view_embedded', data: $data}"></div>
       <!-- /ko -->
 
       <!-- * LOADING SPINNER * -->
@@ -156,7 +133,7 @@
       </div>
 
       <!-- * CHOOSE TUTORIAL OR EXTENDED VIEW TEMPLATE * -->
-      <div data-bind="template: 'thing_view'"></div>
+      <div data-bind="template: {name: app.mode.tutorial? 'thing_view' : 'thing_view_extended', data: $data}"></div>
 
     <!-- /ko -->
 
@@ -166,7 +143,7 @@
         <a class='pull-right' data-bind="click: onCancel"><i class="icon-arrow-left"></i></a>
       </div>
 
-      <div data-bind="template: 'thing_edit'"></div>
+      <div data-bind="template: {name: 'thing_edit', data: $data}"></div>
 
       <!-- * FORM BUTTONS * -->
       <div class='span11 pagination-centered'>
@@ -219,7 +196,7 @@
           <div class="control-group">
             <label class="control-label">Caption</label>
             <div class="controls">
-              <input type="text" data-bind="value: caption, valueUpdate: 'keyup'">
+              <input type="text" data-bind="value: caption">
             </div>
           </div>
         </form>
@@ -233,20 +210,52 @@
     </div>
   </script>
 
+  <!-- ****************** -->
+  <!-- APP MANAGEMENT     -->
+  <!-- ****************** -->
+
+  <!-- SHARED TEMPLATE - HEADER COMPONENT -->
+  <script type="text/x-jquery-tmpl" id="page_header">
+    <div class="navbar navbar-fixed-top navbar-inverse"><div class="navbar-inner"><div class="container">
+
+      <ul class="nav">
+
+        <li><a class='brand' href="https://github.com/kmalakoff/knockback-reference-app/">Knockback.js Reference App</a></li>
+
+        <!-- * NAVIGATION ITEMS * -->
+        <!-- ko foreach: nav_items -->
+          <li data-bind="css: {active: $parent.active_url()===url}"><a data-bind="text: name, click: goTo"></a></li>
+        <!-- /ko -->
+
+      </ul>
+
+      <!-- * APPLICATION MANAGEMENT AND CREDITS * -->
+      <div data-bind="template: {name: 'management', data: $data}"></div>
+      <div data-bind="template: {name: 'credits', data: $data}"></div>
+
+    </div></div></div>
+  </script>
+
   <!-- Import jQuery before the rest-->
   <script src="vendor/js/jquery-1.8.0.js"></script>
 
-  <!-- Knockback and optional libraries-->
+  <!-- Knockback -->
   <script src="vendor/js/knockback-core-stack-0.16.6.js"></script>
+
+  <!-- Knockback optional libraries-->
   <script src="vendor/js/backbone-modelref-0.1.5.js"></script>
   <script src="vendor/js/backbone-relational-0.6.0.js"></script>
   <script src="vendor/js/knockback-statistics-0.16.6.js"></script>
+  <script src="vendor/js/knockback-page-navigator-simple-0.1.1.js"></script>
+  <script src="vendor/js/knockback-page-navigator-panes-0.1.1.js"></script>
+  <script src="vendor/js/knockback-sample-transitions-jquery-0.1.1.js"></script>
 
-  <!-- The App and dependencies-->
+  <!-- App Dependencies -->
   <script src="vendor/js/backbone.localStorage.js"></script>
   <script src="vendor/js/spin.js"></script>
-  <script src="app-management.js"></script>
-  <script src="app.js"></script>
 
+  <!-- The App -->
+  <script src="app.js"></script>
+  <script src="app_extended.js"></script>
 </body>
 </html>
