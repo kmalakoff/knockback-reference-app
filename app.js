@@ -26,7 +26,7 @@
       _ref = ko.utils.unwrapObservable(value_accessor());
       for (key in _ref) {
         state = _ref[key];
-        if (state) {
+        if (ko.utils.unwrapObservable(state)) {
           $(element).addClass(key);
         } else {
           $(element).removeClass(key);
@@ -103,24 +103,22 @@
         things: new ThingCollection()
       };
       this.deleteAllThings = function() {
-        var model, _i, _len, _ref, _results;
+        var model, _i, _len, _ref;
         _ref = _.clone(_this.collections.things.models);
-        _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           model = _ref[_i];
-          _results.push(model.destroy());
+          model.destroy();
         }
-        return _results;
       };
       this.saveAllThings = function() {
-        var model, _i, _len, _ref, _results;
+        var model, _i, _len, _ref;
         _ref = _this.collections.things.models;
-        _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           model = _ref[_i];
-          _results.push(model.hasChanged() ? model.save() : void 0);
+          if (model.hasChanged()) {
+            model.save();
+          }
         }
-        return _results;
       };
       _.delay((function() {
         return _this.collections.things.fetch();
@@ -135,7 +133,7 @@
           }
         }, {
           name: 'Manage Things',
-          url: 'things',
+          url: '#things',
           goTo: function(vm) {
             return kb.loadUrl(vm.url);
           }
@@ -262,7 +260,7 @@
     constructor: function() {
       var model,
         _this = this;
-      _.bindAll(this, 'onAdd', 'onClear');
+      _.bindAll(this, 'onSubmit', 'onClear');
       kb.ViewModel.prototype.constructor.call(this, model = new Thing(), {
         requires: ['id', 'name', 'caption'],
         excludes: ['my_things']
@@ -272,27 +270,15 @@
         sort_attribute: 'name',
         view_model: ThingLinkViewModel
       });
-      this.validations_filter_count = ko.observable(2);
-      this.name_errors = ko.computed(function() {
-        var errors, name;
-        if (!(name = _this.name())) {
-          errors = 'Things like names';
-        } else if (_.find(app.collections.things.models, function(test) {
-          return test.get('name') === name;
-        })) {
-          errors = "" + name + " already taken";
-        }
-        if (utils.decrementClampedObservable(_this.validations_filter_count)) {
-          return '';
-        } else {
-          return errors;
-        }
-      });
+      this.is_unique = function() {
+        return !_.find(app.collections.things.models, function(test) {
+          return (test !== _this.model()) && test.get('name') === _this.name();
+        });
+      };
     },
-    onAdd: function() {
+    onSubmit: function() {
       var model;
-      this.validations_filter_count(0);
-      if (this.name_errors()) {
+      if (this.$name().invalid) {
         return;
       }
       model = kb.utils.wrappedObject(this);
@@ -308,7 +294,6 @@
       return this.onClear();
     },
     onClear: function() {
-      this.validations_filter_count(3);
       this.my_things_select([]);
       return this.model(new Thing());
     }
@@ -339,16 +324,11 @@
         sort_attribute: 'name'
       });
       this.edit_mode = ko.observable(false);
-      this.name_errors = ko.computed(function() {
-        var name;
-        if (!(name = _this.name())) {
-          return 'Things like names';
-        } else if (_.find(app.collections.things.models, function(test) {
-          return (test.get('name') === name) && (test.get('id') !== _this.id());
-        })) {
-          return "" + name + " already taken";
-        }
-      });
+      this.is_unique = function() {
+        return !_.find(app.collections.things.models, function(test) {
+          return (test !== _this.model()) && test.get('name') === _this.name();
+        });
+      };
       this.my_model = model;
       this.is_loaded = ko.observable(model && model.isLoaded());
       this._onModelLoaded = function(m) {
@@ -374,7 +354,7 @@
     },
     onSubmit: function() {
       var model;
-      if (this.name_errors()) {
+      if (this.$name().invalid) {
         return;
       }
       if ((model = kb.utils.wrappedObject(this))) {

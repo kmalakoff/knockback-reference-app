@@ -17,13 +17,7 @@ window.ThingCellViewModel = kb.ViewModel.extend({
     @sorted_thing_links = kb.collectionObservable(app.collections.things, {view_model: ThingLinkViewModel, sort_attribute: 'name'})
     @edit_mode = ko.observable(false)
 
-    # validations
-    @name_errors = ko.computed(=>
-      if not (name = @name())
-        return 'Things like names'
-      else if _.find(app.collections.things.models, (test) => (test.get('name') == name) and (test.get('id') isnt @id()))
-        return "#{name} already taken"
-    )
+    @is_unique = => return !_.find(app.collections.things.models, (test) => (test isnt @model()) and test.get('name') is @name())
 
     # allow for loading spinner
     @my_model = model
@@ -42,7 +36,7 @@ window.ThingCellViewModel = kb.ViewModel.extend({
     kb.loadUrl('things') # redirect
 
   onSubmit: ->
-    return if @name_errors() # errors
+    return if @$name().invalid # errors
     if (model = kb.utils.wrappedObject(@))
       model.get('my_things').reset(_.map(@my_things_select(), (vm) -> kb.utils.wrappedModel(vm))) # add the relationships now that they are decided
 

@@ -13,8 +13,8 @@ class window.ApplicationViewModel
     #########################
     @collections =
       things: new ThingCollection()
-    @deleteAllThings = => model.destroy() for model in _.clone(@collections.things.models)
-    @saveAllThings = => (model.save() if model.hasChanged()) for model in @collections.things.models
+    @deleteAllThings = => model.destroy() for model in _.clone(@collections.things.models); return
+    @saveAllThings = => (model.save() if model.hasChanged()) for model in @collections.things.models; return
     _.delay((=> @collections.things.fetch()), COLLECTION_LOAD_DELAY) # load things collection late (to demonstrate Backbone.ModelRef)
 
     #########################
@@ -23,7 +23,7 @@ class window.ApplicationViewModel
     @active_url = ko.observable(window.location.hash)
     @nav_items = ko.observableArray([
       {name: 'Welcome',       url: '',        goTo: (vm) -> kb.loadUrl(vm.url)},
-      {name: 'Manage Things', url: 'things',  goTo: (vm) -> kb.loadUrl(vm.url)}
+      {name: 'Manage Things', url: '#things',  goTo: (vm) -> kb.loadUrl(vm.url)}
     ])
 
     @credits_is_opened = ko.observable(false)

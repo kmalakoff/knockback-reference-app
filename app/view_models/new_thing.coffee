@@ -1,7 +1,7 @@
 window.NewThingViewModel = kb.ViewModel.extend({
   constructor: ->
     # bind functions so they can be called from templates
-    _.bindAll(@, 'onAdd', 'onClear')
+    _.bindAll(@, 'onSubmit', 'onClear')
 
     kb.ViewModel.prototype.constructor.call(@, model = new Thing(), {
       requires: ['id', 'name', 'caption']
@@ -11,20 +11,11 @@ window.NewThingViewModel = kb.ViewModel.extend({
     @my_things_select = ko.observableArray()
     @available_things = kb.collectionObservable(app.collections.things, {sort_attribute: 'name', view_model: ThingLinkViewModel})
 
-    # validations
-    @validations_filter_count = ko.observable(2)
-    @name_errors = ko.computed(=>
-      if not (name = @name())
-        errors = 'Things like names'
-      else if _.find(app.collections.things.models, (test) -> test.get('name') is name)
-        errors = "#{name} already taken"
-      return if utils.decrementClampedObservable(@validations_filter_count) then '' else errors
-    )
+    @is_unique = => return !_.find(app.collections.things.models, (test) => (test isnt @model()) and test.get('name') is @name())
     return
 
-  onAdd: ->
-    @validations_filter_count(0)
-    return if @name_errors() # errors
+  onSubmit: ->
+    return if @$name().invalid # errors
 
     # add to the collection and save
     model = kb.utils.wrappedObject(@)
@@ -38,8 +29,6 @@ window.NewThingViewModel = kb.ViewModel.extend({
     @onClear()
 
   onClear: ->
-    # set a new model in our view model
-    @validations_filter_count(3) # 3 = 1 for the view + 1 for the view_model + 1 to delay warnings
     @my_things_select([]) # clear selection
     @model(new Thing()) # create a new model to edit
 })
