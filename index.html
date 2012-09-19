@@ -25,7 +25,7 @@
 <body>
 
   <!-- THE APP -->
-  <section kb-inject="AppViewModel">
+  <section kb-inject="ApplicationViewModel">
     <header data-bind="template: 'page_header'"></header>
     <section class='pane-navigator page'></section>
     <section data-bind="template: {name: 'statistics', data: statistics}"></section>
@@ -37,7 +37,7 @@
 
       <ul class="nav">
 
-        <li><a class='brand' href="https://github.com/kmalakoff/knockback-reference-app/">Knockback.js Reference App</a></li>
+        <li><a class='brand' href="https://github.com/kmalakoff/knockback-reference-app/">Knockback.js Reference App (Tutorial)</a></li>
 
         <!-- * NAVIGATION ITEMS * -->
         <!-- ko foreach: nav_items -->
@@ -238,6 +238,7 @@
 
   <!-- Knockback and optional libraries-->
   <script src="vendor/js/knockback-core-stack-0.16.6.js"></script>
+  <script src="vendor/js/knockback-validation-0.16.6.js"></script>
   <script src="vendor/js/backbone-modelref-0.1.5.js"></script>
   <script src="vendor/js/backbone-relational-0.6.0.js"></script>
   <script src="vendor/js/knockback-statistics-0.16.6.js"></script>

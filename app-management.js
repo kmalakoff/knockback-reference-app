@@ -4,6 +4,42 @@
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+  Backbone.Store.prototype.clear = function() {
+    var collection, model, relation, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
+    _ref = this._collections;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      collection = _ref[_i];
+      collection.unbind('relational:remove', collection._modelRemovedFromCollection);
+      collection.unbind('relational:add', collection._relatedModelAdded);
+      collection.unbind('relational:remove', collection._relatedModelRemoved);
+      _ref1 = _.clone(collection.models);
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        model = _ref1[_j];
+        if (!(model instanceof Backbone.RelationalModel)) {
+          continue;
+        }
+        this.unregister(model);
+        model._queue = null;
+        _ref2 = model._relations;
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          relation = _ref2[_k];
+          if (relation.related) {
+            relation.related.unbind('relational:add', relation.handleAddition);
+            relation.related.unbind('relational:remove', relation.handleRemoval);
+            relation.related.unbind('relational:reset', relation.handleReset);
+            model.unbind('relational:change:' + relation.key, relation.onChange);
+          }
+          relation.destroy();
+        }
+        model._relations = [];
+        model._previousAttributes = {};
+      }
+      collection.models = [];
+    }
+    this._collections = [];
+    return this._reverseRelations = [];
+  };
+
   TemplateSource = (function() {
 
     function TemplateSource(template_text, binding_context) {
@@ -103,9 +139,8 @@
         _this = this;
       this.cycling_pages = true;
       this.memory_cycle_start(this._getHeapSize());
-      if (!app.view_model) {
-        app.setMode(app.mode);
-        this.is_opened(true);
+      if (window.location.hash === '#no_app') {
+        window.location.hash = this.app_restore_url;
       }
       available_urls = ['', 'things'].concat(_.map(app.collections.things.models, function(test) {
         return "things/" + test.id;
@@ -163,9 +198,9 @@
 
   })();
 
-  template_engine.templates.credits = "<div data-bind=\"visible: credits_is_opened\">\n  <div class='modal-backdrop'></div>\n  <div class=\"modal\" data-bind=\"fadeIn: credits_is_opened\"><div class=\"modal-body\">\n    <div class='nav'>\n      <a class='pull-right' data-bind=\"click: toggleCredits\"><i class=\"icon-remove\"></i></a>\n    </div>\n\n    <div class='pagination-centered'>\n      <a href=\"http://kmalakoff.github.com/knockback/\">Knockback.js</a>\n      <span> and </span>\n      <a href=\"https://github.com/kmalakoff/knockback-reference-app/\">Knockback.js Reference App</a>\n      <br/>\n      <span> are brought to you by </span>\n      <a href=\"https://github.com/kmalakoff\">Kevin Malakoff</a>\n    </div>\n    <p></p>\n    <div class='pagination-centered'>\n      <span> With much appreciated dependencies on the </span>\n      <a href=\"http://twitter.github.com/bootstrap/\">Twitter Bootstrap</a>\n      <span>, </span>\n      <a href=\"http://knockoutjs.com/\">Knockout.js</a>\n      <span>, </span>\n      <a href=\"http://backbonejs.org/\">Backbone.js</a>\n      <span> and </span>\n      <a href=\"http://underscorejs.org/\">Underscore.js</a>\n      <span> libraries.</span>\n    </div>\n\n  </div></div>\n</div>";
+  template_engine.templates.credits = "<div data-bind=\"visible: credits_is_opened\">\n  <div class='modal-backdrop'></div>\n  <div class=\"modal\" data-bind=\"fadeIn: credits_is_opened\"><div class=\"modal-body\">\n    <div class='nav pull-right'>\n      <a data-bind=\"click: toggleCredits\"><i class=\"icon-remove\"></i></a>\n    </div>\n\n    <div class='pagination-centered'>\n      <a href=\"http://kmalakoff.github.com/knockback/\">Knockback.js</a>\n      <span> and </span>\n      <a href=\"https://github.com/kmalakoff/knockback-reference-app/\">Knockback.js Reference App</a>\n      <br/>\n      <span> are brought to you by </span>\n      <a href=\"https://github.com/kmalakoff\">Kevin Malakoff</a>\n    </div>\n    <p></p>\n    <div class='pagination-centered'>\n      <span> With much appreciated dependencies on the </span>\n      <a href=\"http://twitter.github.com/bootstrap/\">Twitter Bootstrap</a>\n      <span>, </span>\n      <a href=\"http://knockoutjs.com/\">Knockout.js</a>\n      <span>, </span>\n      <a href=\"http://backbonejs.org/\">Backbone.js</a>\n      <span> and </span>\n      <a href=\"http://underscorejs.org/\">Underscore.js</a>\n      <span> libraries.</span>\n    </div>\n\n  </div></div>\n</div>";
 
-  template_engine.templates.management = "<ul class=\"nav pull-right\">\n  <li><a data-bind=\"click: toggleCredits\">Credits</a></li>\n  <li class=\"dropdown\" data-bind=\"classes: {open: mode_menu_is_opened()}\">\n    <a href=\"#\" class=\"dropdown-toggle\" data-bind=\"click: toggleModeMenu\">\n      <span data-bind=\"text: 'Mode'\"></span>\n      <b class=\"caret\"></b>\n    </a>\n    <ul class=\"dropdown-menu\">\n      <li><a data-bind=\"click: function(){app.setMode({tutorial: true});}\">Tutorial</a></li>\n      <li><a data-bind=\"click: function(){app.setMode({tutorial: true});}\">Knockback-Navigators</a></li>\n      <li class=\"divider\"></li>\n      <li><a data-bind=\"click: statistics.open\">Statistics</a></li>\n    </ul>\n  </li>\n</ul>";
+  template_engine.templates.management = "<ul class=\"nav pull-right\">\n  <li><a data-bind=\"click: toggleCredits\">Credits</a></li>\n  <li class=\"dropdown\" data-bind=\"classes: {open: mode_menu_is_opened()}\">\n    <a href=\"#\" class=\"dropdown-toggle\" data-bind=\"click: toggleModeMenu\">\n      <span data-bind=\"text: 'Mode'\"></span>\n      <b class=\"caret\"></b>\n    </a>\n    <ul class=\"dropdown-menu\">\n      <li><a data-bind=\"click: goToApplication\">Tutorial</a></li>\n      <li><a data-bind=\"click: goToNavigatorsApplication\">Knockback-Navigators</a></li>\n      <li class=\"divider\"></li>\n      <li><a data-bind=\"click: statistics.open\">Statistics</a></li>\n    </ul>\n  </li>\n</ul>";
 
   template_engine.templates.statistics = "<div data-bind=\"visible: is_opened\">\n\n  <div class='modal-backdrop'></div>\n  <div class=\"modal\" data-bind=\"fadeIn: is_opened\"><div class=\"modal-body\">\n    <div class='nav'>\n      <a class='pull-right' data-bind=\"click: close\"><i class=\"icon-remove\"></i></a>\n    </div>\n\n    <div class='pagination-centered'>\n      <h4>Process Memory</h4>\n      <!-- ko ifnot: memory_stats_available -->\n        <p>Stats not available. Launch Chrome with option --enable-memory-info</p>\n      <!-- /ko -->\n\n      <!-- ko if: memory_stats_available -->\n        <table class=\"table table-bordered\">\n          <tr>\n            <td></td>\n            <td>Start</td>\n            <td>Current/End</td>\n            <td>Delta</td>\n          </tr>\n          <tr>\n            <td>Baseline</td>\n            <td><span data-bind=\"text: toFixed(memory_start(), 2)\"></span><button class='btn btn-mini pull-right' data-bind=\"click: resetBaselineMemory\">reset</button></td>\n            <td data-bind=\"text: toFixed(memory_current(), 2)\"></td>\n            <td data-bind=\"text: toFixed(memory_delta(), 2)\"></td>\n          </tr>\n          <tr>\n            <td>Cycle</td>\n            <td data-bind=\"text: toFixed(memory_cycle_start(), 2)\"></td>\n            <td data-bind=\"text: toFixed(memory_cycle_current(), 2)\"></td>\n            <td data-bind=\"text: toFixed(memory_cycle_delta(), 2)\"></td>\n          </tr>\n        </table>\n      <!-- /ko -->\n\n      <h4>Active kb.ViewModels and kb.CollectionObservables</h4>\n      <p data-bind=\"text: observable_stats\"></p>\n      <h4>Model Events Triggered <button class='btn btn-small pull-mini' data-bind=\"click: clear\">clear</button></h4>\n      <p data-bind=\"text: model_events_stats\"></p>\n      <form class=\"form-horizontal\">\n        <button class='btn btn-small' data-bind=\"click: cyclePages\">Cycle Pages</button>\n        <button class='btn btn-small' data-bind=\"click: kb.loadUrlFn('no_app')\">Release Application</button>\n      </form>\n      <form class=\"form-horizontal\">\n        <div class=\"control-group\">\n          <label class=\"control-label\">Cycle Count</label>\n          <div class=\"controls\">\n            <input type=\"text\" data-bind=\"value: cycle_count\"/>\n          </div>\n          <label class=\"control-label\">Cycle Interval</label>\n          <div class=\"controls\">\n            <input type=\"text\" data-bind=\"value: cycle_interval\"/>\n          </div>\n        </div>\n      </form>\n    </div>\n  </div></div>\n</div>";
 

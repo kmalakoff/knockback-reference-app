@@ -57,7 +57,7 @@ class window.StatisticsViewModel
     @memory_cycle_start(@_getHeapSize())
 
     # load the app if it isn't already
-    (app.setMode(app.mode); @is_opened(true)) unless app.view_model
+    window.location.hash = @app_restore_url if window.location.hash is '#no_app' # restore the application page
 
     # make the randomized list of urls to cycle through
     available_urls = ['', 'things'].concat(_.map(app.collections.things.models, (test) -> "things/#{test.id}"))

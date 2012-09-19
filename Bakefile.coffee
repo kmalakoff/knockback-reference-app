@@ -9,15 +9,11 @@ module.exports =
     output: '..'
     directories: 'app_management'
 
-  app_navigators:
-    join: 'app-navigators.js'
-    output: '..'
-    directories: 'app_navigators'
-
   _postinstall:
     commands: [
       # knockback dependencies
       'cp -v knockback/knockback-core-stack.js vendor/js/knockback-core-stack.js'
+      'cp -v knockback/lib/knockback-validation.js vendor/js/knockback-validation.js'
 
       # knockback optional libraries
       'cp -v backbone-modelref vendor/js/backbone-modelref.js'

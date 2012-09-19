@@ -2,8 +2,8 @@ template_engine.templates.credits = """
   <div data-bind="visible: credits_is_opened">
     <div class='modal-backdrop'></div>
     <div class="modal" data-bind="fadeIn: credits_is_opened"><div class="modal-body">
-      <div class='nav'>
-        <a class='pull-right' data-bind="click: toggleCredits"><i class="icon-remove"></i></a>
+      <div class='nav pull-right'>
+        <a data-bind="click: toggleCredits"><i class="icon-remove"></i></a>
       </div>
 
       <div class='pagination-centered'>

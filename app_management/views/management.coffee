@@ -7,8 +7,8 @@ template_engine.templates.management = """
         <b class="caret"></b>
       </a>
       <ul class="dropdown-menu">
-        <li><a data-bind="click: function(){app.setMode({tutorial: true});}">Tutorial</a></li>
-        <li><a data-bind="click: function(){app.setMode({tutorial: true});}">Knockback-Navigators</a></li>
+        <li><a data-bind="click: goToApplication">Tutorial</a></li>
+        <li><a data-bind="click: goToNavigatorsApplication">Knockback-Navigators</a></li>
         <li class="divider"></li>
         <li><a data-bind="click: statistics.open">Statistics</a></li>
       </ul>

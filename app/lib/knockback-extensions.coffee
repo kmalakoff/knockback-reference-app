@@ -1,4 +1,4 @@
-unless kb.loadUrl
+unless kb.loadUrl # these are defined in Knockback-Navigators so don't override if they exist
   kb.loadUrl = (url) -> window.location.hash = url
 
   kb.loadUrlFn = (url) ->
