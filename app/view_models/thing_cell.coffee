@@ -20,7 +20,7 @@ window.ThingCellViewModel = kb.ViewModel.extend({
     # validations
     trigger = kb.triggeredObservable(model, 'change')
     @is_clean = ko.computed(=> trigger(); _.isEqual(model.toJSON(), @start_attributes))
-    @is_unique = => return !_.find(app.collections.things.models, (test) => (test isnt @model()) and test.get('name') is @name())
+    @nameTaken = => return !!_.find(app.collections.things.models, (test) => (test isnt @model()) and test.get('name') is @name())
 
     # allow for loading spinner
     @my_model = model

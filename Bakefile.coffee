@@ -13,7 +13,6 @@ module.exports =
     commands: [
       # knockback dependencies
       'cp -v knockback/knockback-full-stack.js vendor/js/knockback-full-stack.js'
-      'cp -v knockback/lib/knockback-validation.js vendor/js/knockback-validation.js'
 
       # knockback optional libraries
       'cp -v backbone-modelref vendor/js/backbone-modelref.js'

@@ -15,7 +15,7 @@ window.NewThingViewModel = kb.ViewModel.extend({
     @start_attributes = model.toJSON()
     trigger = kb.triggeredObservable(model, 'change')
     @is_clean = ko.computed(=> trigger(); _.isEqual(model.toJSON(), @start_attributes))
-    @is_unique = => return !_.find(app.collections.things.models, (test) => (test isnt @model()) and test.get('name') is @name())
+    @nameTaken = => return !!_.find(app.collections.things.models, (test) => (test isnt @model()) and test.get('name') is @name())
     return
 
   onSubmit: ->

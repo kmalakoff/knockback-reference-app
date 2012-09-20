@@ -206,13 +206,13 @@
       <!-- * MY INFORMATION * -->
       <div class='span8'>
         <legend>Me</legend>
-        <form class="form-horizontal" data-bind="inject: kb.formValidator">
+        <form class="form-horizontal" data-bind="inject: kb.formValidator, validations: {disable: is_clean}">
 
-          <div class="control-group" data-bind="classes: {error: !is_clean() && $name().invalid}">
+          <div class="control-group" data-bind="classes: {error: $name().error_count}">
             <label class="control-label">Name</label>
-            <input type="text" name="name" data-bind="value: name, valueUpdate: 'keyup', unique: is_unique" required>
-            <span data-bind="visible: !is_clean() && $name().required" class="help-inline">Things like names</span>
-            <span data-bind="visible: !is_clean() && !$name().required && $name().unique, text: name() +' already taken'" class="help-inline"></span>
+            <input type="text" name="name" data-bind="value: name, valueUpdate: 'keyup', validations: {unique: nameTaken}" required>
+            <span data-bind="visible: $name().active_error == 'required'" class="help-inline">Things like names</span>
+            <span data-bind="visible: $name().active_error == 'unique', text: name() +' already taken'" class="help-inline"></span>
           </div>
 
           <div class="control-group">
@@ -234,10 +234,10 @@
   <script src="vendor/js/jquery-1.8.0.js"></script>
 
   <!-- Knockback and optional libraries-->
-  <script src="vendor/js/knockback-full-stack-0.16.6.js"></script>
+  <script src="vendor/js/knockback-full-stack-0.16.7.js"></script>
   <script src="vendor/js/backbone-modelref-0.1.5.js"></script>
   <script src="vendor/js/backbone-relational-0.6.0.js"></script>
-  <script src="vendor/js/knockback-statistics-0.16.6.js"></script>
+  <script src="vendor/js/knockback-statistics-0.16.7.js"></script>
 
   <!-- The App and dependencies-->
   <script src="vendor/js/backbone.localStorage.js"></script>

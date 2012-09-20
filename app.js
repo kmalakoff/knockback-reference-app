@@ -265,8 +265,8 @@
         trigger();
         return _.isEqual(model.toJSON(), _this.start_attributes);
       });
-      this.is_unique = function() {
-        return !_.find(app.collections.things.models, function(test) {
+      this.nameTaken = function() {
+        return !!_.find(app.collections.things.models, function(test) {
           return (test !== _this.model()) && test.get('name') === _this.name();
         });
       };
@@ -322,8 +322,8 @@
         trigger();
         return _.isEqual(model.toJSON(), _this.start_attributes);
       });
-      this.is_unique = function() {
-        return !_.find(app.collections.things.models, function(test) {
+      this.nameTaken = function() {
+        return !!_.find(app.collections.things.models, function(test) {
           return (test !== _this.model()) && test.get('name') === _this.name();
         });
       };
