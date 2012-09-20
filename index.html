@@ -206,7 +206,7 @@
       <!-- * MY INFORMATION * -->
       <div class='span8'>
         <legend>Me</legend>
-        <form class="form-horizontal" data-bind="inject: kb.formValidator, validations: {disable: is_clean}">
+        <form class="form-horizontal" data-bind="inject: kb.formValidator, validation_options: {disable: is_clean, priorities: 'required'}">
 
           <div class="control-group" data-bind="classes: {error: $name().error_count}">
             <label class="control-label">Name</label>

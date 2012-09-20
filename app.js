@@ -259,11 +259,11 @@
         sort_attribute: 'name',
         view_model: ThingLinkViewModel
       });
-      this.start_attributes = model.toJSON();
-      trigger = kb.triggeredObservable(model, 'change');
+      this.start_attributes = this.model().toJSON();
+      trigger = kb.triggeredObservable(this.model(), 'change');
       this.is_clean = ko.computed(function() {
         trigger();
-        return _.isEqual(model.toJSON(), _this.start_attributes);
+        return _.isEqual(_this.model().toJSON(), _this.start_attributes);
       });
       this.nameTaken = function() {
         return !!_.find(app.collections.things.models, function(test) {
@@ -272,13 +272,13 @@
       };
     },
     onSubmit: function() {
-      var model;
-      model = kb.utils.wrappedObject(this);
-      model.get('my_things').reset(_.map(this.my_things_select(), function(vm) {
+      var new_model;
+      new_model = new Thing(this.model().toJSON());
+      new_model.get('my_things').reset(_.map(this.my_things_select(), function(vm) {
         return kb.utils.wrappedModel(vm);
       }));
-      app.collections.things.add(model);
-      model.save(null, {
+      app.collections.things.add(new_model);
+      new_model.save(null, {
         success: function() {
           return _.defer(app.saveAllThings);
         }
@@ -287,7 +287,8 @@
     },
     onClear: function() {
       this.my_things_select([]);
-      return this.model(new Thing());
+      this.model().clear();
+      return this.model().set(this.start_attributes);
     }
   });
 
