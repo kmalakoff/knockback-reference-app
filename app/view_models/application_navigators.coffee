@@ -23,7 +23,7 @@ class window.ApplicationNavigatorsViewModel extends ApplicationViewModel
     router.route('things/:id', null, page_navigator.dispatcher((id)->
       model = app.collections.things.get(id) or new Backbone.ModelRef(app.collections.things, id)
       page_navigator.loadPage({
-        create: -> kb.renderTemplate('thing_page', new ThingCellViewModel(model))
+        create: -> kb.renderTemplate('thing_page', new ThingViewModel(model))
         transition: 'CoverVertical'
       })
     ))

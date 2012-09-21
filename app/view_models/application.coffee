@@ -65,6 +65,6 @@ class window.ApplicationViewModel
     router.route('things', null, => @loadPage(kb.renderTemplate('things_page', new ThingsPageViewModel())))
     router.route('things/:id', null, (id) =>
       model = @collections.things.get(id) or new Backbone.ModelRef(@collections.things, id)
-      @loadPage(kb.renderTemplate('thing_page', new ThingCellViewModel(model)))
+      @loadPage(kb.renderTemplate('thing_page', new ThingViewModel(model)))
     )
     return router

@@ -87,7 +87,7 @@
 
         <div class='span11 pagination-centered'>
           <a class='btn btn-small btn-primary' data-bind="click: new_thing.onSubmit, visible: new_thing.$name().valid"><i class="icon-plus icon-white"></i><span> Add</span></a>
-          <a class='btn btn-small' data-bind="click: new_thing.onClear"><i class="icon-arrow-left"></i><span> Clear</span></a>
+          <a class='btn btn-small' data-bind="click: new_thing.onDestroy"><i class="icon-arrow-left"></i><span> Clear</span></a>
           <div style="height:10px"></div>
         </div>
       </div>
@@ -231,8 +231,8 @@
 
       <!-- * MY THINGS SELECTOR * -->
       <div class='span3'>
-        <legend data-bind="text: 'My Things (' + my_things_select().length + ')'"></legend>
-        <select multiple="multiple" data-bind="options: available_things, optionsText: 'name', selectedOptions: my_things_select"></select>
+        <legend data-bind="text: 'My Things (' + my_things().length + ')'"></legend>
+        <select multiple="multiple" data-bind="options: available_things, optionsText: 'name', selectedOptions: selected_things"></select>
       </div>
     </div>
   </script>

@@ -188,7 +188,7 @@
       router.route('things/:id', null, function(id) {
         var model;
         model = _this.collections.things.get(id) || new Backbone.ModelRef(_this.collections.things, id);
-        return _this.loadPage(kb.renderTemplate('thing_page', new ThingCellViewModel(model)));
+        return _this.loadPage(kb.renderTemplate('thing_page', new ThingViewModel(model)));
       });
       return router;
     };
@@ -233,7 +233,7 @@
         model = app.collections.things.get(id) || new Backbone.ModelRef(app.collections.things, id);
         return page_navigator.loadPage({
           create: function() {
-            return kb.renderTemplate('thing_page', new ThingCellViewModel(model));
+            return kb.renderTemplate('thing_page', new ThingViewModel(model));
           },
           transition: 'CoverVertical'
         });
@@ -245,137 +245,99 @@
 
   })(ApplicationViewModel);
 
-  window.NewThingViewModel = kb.ViewModel.extend({
-    constructor: function() {
-      var model, trigger,
-        _this = this;
-      _.bindAll(this, 'onSubmit', 'onClear');
-      kb.ViewModel.prototype.constructor.call(this, model = new Thing(), {
-        requires: ['id', 'name', 'caption'],
-        excludes: ['my_things']
-      });
-      this.my_things_select = ko.observableArray();
-      this.available_things = kb.collectionObservable(app.collections.things, {
-        sort_attribute: 'name',
-        view_model: ThingLinkViewModel
-      });
-      this.start_attributes = this.model().toJSON();
-      trigger = kb.triggeredObservable(this.model(), 'change');
-      this.is_clean = ko.computed(function() {
-        trigger();
-        return _.isEqual(_this.model().toJSON(), _this.start_attributes);
-      });
-      this.nameTaken = function() {
-        return !!_.find(app.collections.things.models, function(test) {
-          return (test !== _this.model()) && test.get('name') === _this.name();
-        });
-      };
-    },
-    onSubmit: function() {
-      var new_model;
-      new_model = new Thing(this.model().toJSON());
-      new_model.get('my_things').reset(_.map(this.my_things_select(), function(vm) {
-        return kb.utils.wrappedModel(vm);
-      }));
-      app.collections.things.add(new_model);
-      new_model.save(null, {
-        success: function() {
-          return _.defer(app.saveAllThings);
-        }
-      });
-      return this.onClear();
-    },
-    onClear: function() {
-      this.my_things_select([]);
-      this.model().clear();
-      return this.model().set(this.start_attributes);
-    }
-  });
-
-  window.ThingCellViewModel = kb.ViewModel.extend({
+  window.ThingViewModel = kb.ViewModel.extend({
     constructor: function(model, options) {
-      var trigger,
-        _this = this;
-      kb.ViewModel.prototype.constructor.call(this, model, {
-        requires: ['id', 'name', 'caption', 'my_things', 'my_owner'],
-        factories: {
-          'my_things': ThingCellCollectionObservable,
-          'my_owner': ThingLinkViewModel
-        },
-        options: options
-      });
-      this.my_things_select = ko.observableArray(this.my_things());
-      this.my_things.subscribe(function(value) {
-        return _this.my_things_select(value);
-      });
-      this.available_things = new ThingCellCollectionObservable(app.collections.things, {
+      var _this = this;
+      _.bindAll(this, 'onEdit', 'onDelete', 'onSubmit', 'onCancel');
+      this.available_things = kb.collectionObservable(app.collections.things, {
+        view_model: ThingLinkViewModel,
         filters: this.id,
-        sort_attribute: 'name',
-        options: this.my_things.value().shareOptions()
+        sort_attribute: 'name'
+      });
+      this.selected_things = ko.observableArray();
+      kb.ViewModel.prototype.constructor.call(this, null, {
+        requires: ['id', 'name', 'caption', 'my_owner', 'my_things'],
+        factories: {
+          'my_owner': ThingLinkViewModel,
+          'my_things': ThingLinkCollectionObservable
+        },
+        options: this.available_things.shareOptions()
       });
       this.sorted_thing_links = kb.collectionObservable(app.collections.things, {
         view_model: ThingLinkViewModel,
         sort_attribute: 'name'
       });
-      this.edit_mode = ko.observable(false);
-      trigger = kb.triggeredObservable(model, 'change');
-      this.is_clean = ko.computed(function() {
-        trigger();
-        return _.isEqual(model.toJSON(), _this.start_attributes);
-      });
-      this.nameTaken = function() {
-        return !!_.find(app.collections.things.models, function(test) {
-          return (test !== _this.model()) && test.get('name') === _this.name();
-        });
-      };
-      this.my_model = model;
+      this.edit_mode = ko.observable(!model);
+      if (!model) {
+        model = new Thing();
+      }
       this.is_loaded = ko.observable(model && model.isLoaded());
-      this._onModelLoaded = function(m) {
-        _this.start_attributes = m.toJSON();
+      model.bindLoadingStates(function(model) {
+        var trigger;
+        _this.start_attributes = model.toJSON();
+        _this.model(model);
+        _this.selected_things(_this.my_things());
+        trigger = kb.triggeredObservable(model, 'change');
+        _this.is_clean = ko.computed(function() {
+          trigger();
+          return _.isEqual(model.toJSON(), _this.start_attributes);
+        });
+        _this.nameTaken = function() {
+          return !!_.find(app.collections.things.models, function(test) {
+            return (test !== model) && test.get('name') === _this.name();
+          });
+        };
         return _this.is_loaded(true);
-      };
-      !model || model.bindLoadingStates(this._onModelLoaded);
+      });
     },
     onEdit: function() {
-      this.my_things_select(this.my_things());
+      this.selected_things(this.my_things());
       return this.edit_mode(true);
     },
     onDelete: function() {
       var model;
-      if ((model = kb.utils.wrappedObject(this))) {
+      if (!(model = this.model())) {
+        return;
+      }
+      if (model.isNew()) {
+        this.onCancel();
+      } else {
         model.destroy({
           success: function() {
             return _.defer(app.saveAllThings);
           }
         });
+        kb.loadUrl('things');
       }
-      return kb.loadUrl('things');
     },
     onSubmit: function() {
-      var model;
-      if ((model = kb.utils.wrappedObject(this))) {
-        model.get('my_things').reset(_.map(this.my_things_select(), function(vm) {
-          return kb.utils.wrappedModel(vm);
-        }));
+      var model, new_thing;
+      this.edit_mode(false);
+      if (!(model = this.model())) {
+        return;
+      }
+      this.my_things(this.selected_things());
+      if (model.isNew()) {
+        app.collections.things.add(new_thing = new Thing(model.toJSON()));
+        new_thing.save(null, {
+          success: function() {
+            return _.defer(app.saveAllThings);
+          }
+        });
+        this.onCancel();
+      } else {
         app.saveAllThings();
       }
-      return this.edit_mode(false);
     },
     onCancel: function() {
       var model;
-      if ((model = kb.utils.wrappedObject(this))) {
-        model.set(this.start_attributes);
+      this.edit_mode(false);
+      if (!(model = this.model())) {
+        return;
       }
-      return this.edit_mode(false);
-    }
-  });
-
-  window.ThingCellCollectionObservable = kb.CollectionObservable.extend({
-    constructor: function(collection, options) {
-      return kb.CollectionObservable.prototype.constructor.call(this, collection, {
-        view_model: ThingCellViewModel,
-        options: options
-      });
+      model.clear();
+      model.set(this.start_attributes);
+      this.selected_things(this.my_things());
     }
   });
 
@@ -388,15 +350,24 @@
     }
   });
 
+  window.ThingLinkCollectionObservable = kb.CollectionObservable.extend({
+    constructor: function(collection, options) {
+      return kb.CollectionObservable.prototype.constructor.call(this, collection, {
+        view_model: ThingLinkViewModel,
+        options: options
+      });
+    }
+  });
+
   window.ThingsPageViewModel = function() {
     this.sorted_thing_links = kb.collectionObservable(app.collections.things, {
       view_model: ThingLinkViewModel,
       sort_attribute: 'name'
     });
     this.things = kb.collectionObservable(app.collections.things, {
-      view_model: ThingCellViewModel
+      view_model: ThingViewModel
     });
-    this.new_thing = new NewThingViewModel();
+    this.new_thing = new ThingViewModel();
   };
 
 }).call(this);
