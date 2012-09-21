@@ -7,6 +7,5 @@ unless kb.loadUrl # these are defined in Knockback-Navigators so don't override 
 
       # stop the event handling chains
       (not vm or not vm.stopPropagation) or (event = vm) # not a ViewModel, but an event
-      if event and event.stopPropagation
-        event.stopPropagation()
-        event.preventDefault()
+      not (event and event.stopPropagation) or (event.stopPropagation(); event.preventDefault())
+      return

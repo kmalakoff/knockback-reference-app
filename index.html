@@ -19,6 +19,9 @@
     .cell:hover           {color: black; background-color: #E5E5E5;}
     .cell legend          {font-size: 14px;}
     .cell:hover legend    {border-bottom: 1px solid darkgrey;}
+
+    /* allow button group to wrap */
+    .btn-group            {white-space: ellipsis;}
   </style>
 
 </head>
@@ -86,7 +89,7 @@
 
         <div class='span11 pagination-centered'>
           <a class='btn btn-small btn-primary' data-bind="click: new_thing.onSubmit, visible: new_thing.$name().valid"><i class="icon-plus icon-white"></i><span> Add</span></a>
-          <a class='btn btn-small' data-bind="click: new_thing.onDestroy"><i class="icon-arrow-left"></i><span> Clear</span></a>
+          <a class='btn btn-small' data-bind="click: new_thing.onDelete"><i class="icon-arrow-left"></i><span> Clear</span></a>
           <div style="height:10px"></div>
         </div>
       </div>
@@ -110,11 +113,12 @@
 
       <button class='btn btn-small' data-bind="click: goBack"><i class='icon-step-backward'></i><span> Back</span></button>
 
+      <!-- * DELETE ALL BUTTON IF ON THINGS PAGE * -->
+      <!-- ko if: window.location.hash==='#things' -->
+        <button class='btn btn-small btn-inverse' data-bind="click: app.deleteAllThings">Delete All</button>
+      <!-- /ko -->
+
       <div class="btn-group">
-        <!-- * DELETE ALL BUTTON IF ON THINGS PAGE * -->
-        <!-- ko if: window.location.hash==='things' -->
-          <button class='btn btn-small btn-inverse' data-bind="click: app.deleteAllThings">Delete All</button>
-        <!-- /ko -->
 
         <!-- * BUTTON FOR EACH THING * -->
         <!-- ko foreach: app.things_links -->
@@ -152,7 +156,7 @@
     <!-- ko ifnot: edit_mode -->
       <!-- * EDIT MODE TOGGLE * -->
       <div class='nav'>
-        <a class='pull-right' data-bind="click: onEdit"><i class="icon-cog"></i></a>
+        <a class='pull-right' data-bind="click: onStartEdit"><i class="icon-cog"></i></a>
       </div>
 
       <!-- * CHOOSE TUTORIAL OR EXTENDED VIEW TEMPLATE * -->

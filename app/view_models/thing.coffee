@@ -1,6 +1,6 @@
 window.ThingViewModel = kb.ViewModel.extend({
   constructor: (model, options) ->
-    _.bindAll(@, 'onEdit', 'onDelete', 'onSubmit', 'onCancel') # bind functions so they can be called from templates
+    _.bindAll(@, 'onSubmit', 'onDelete', 'onStartEdit', 'onCancelEdit') # bind functions so they can be called from templates
 
     # create the selectable things and required ViewModel observables
     kb.ViewModel.prototype.constructor.call(@, null, {
@@ -11,10 +11,7 @@ window.ThingViewModel = kb.ViewModel.extend({
       }
       options: _.defaults({no_share: true}, options) # because we are starting as null and then setting the model later, don't share with 'null constants' ViewModels
     })
-    @selected_things = ko.observableArray() # used for selecting things but not updating 'my_things' until onSubmit is called (we don't want to break and restore other relationships during edit)
-
-    # additional functionality - the links at the top of the page and the togglable edit mode
-    @sorted_thing_links = kb.collectionObservable(app.collections.things, {view_model: ThingLinkViewModel, sort_attribute: 'name'})
+    @selected_things = kb.collectionObservable(new Backbone.Collection(), app.things_links.shareOptions()) # used for selecting things but not updating 'my_things' until onSubmit is called (we don't want to break and restore other relationships during edit)
     @edit_mode = ko.observable(!model) # start in edit if a new model
 
     # set up a new model, an existing model or a unloaded Backbone.ModelRef
@@ -23,33 +20,16 @@ window.ThingViewModel = kb.ViewModel.extend({
     model.bindLoadingStates((model) =>
       @start_attributes = model.toJSON()
       @model(model)
-      @selected_things(@my_things()) # update: sync 'selected_things' with 'my_things'
 
       # custom validations - make sure the model has changed and check for a unique name
       trigger = kb.triggeredObservable(model, 'change')
       @is_clean = ko.computed(=> trigger(); _.isEqual(model.toJSON(), @start_attributes))
       @nameTaken = => return !!_.find(app.collections.things.models, (test) => (test isnt model) and test.get('name') is @name())
 
+      @onStartEdit() if @edit_mode() # in edit mode so start editing now
+
       @is_loaded(true) # loading spinner
     )
-    return
-
-  onEdit: ->
-    @selected_things(@my_things()) # update: sync 'selected_things' with 'my_things'
-    @edit_mode(true)
-
-  onDelete: ->
-    return unless model = @model() # not loaded
-
-    # a new model so just cancel
-    if model.isNew()
-      @onCancel()
-
-    # destroy, then save all changed models since relationships may have been updated after Backbone.Relational had a chance to update
-    else
-      model.destroy(success: -> _.defer(app.saveAllThings))
-      kb.loadUrl('things') # redirect
-
     return
 
   onSubmit: ->
@@ -61,7 +41,7 @@ window.ThingViewModel = kb.ViewModel.extend({
     if model.isNew()
       app.collections.things.add(new_thing = new Thing(model.toJSON()))
       new_thing.save(null, {success: -> _.defer(app.saveAllThings)}) # first assign an id then save all changed models since relationships may have been updated
-      @onCancel()
+      @onCancelEdit()
 
     # an existing model, just save and quit editing
     else
@@ -69,11 +49,30 @@ window.ThingViewModel = kb.ViewModel.extend({
 
     return
 
-  onCancel: ->
+  onDelete: ->
+    return unless model = @model() # not loaded
+
+    # a new model so just cancel
+    if model.isNew()
+      @onCancelEdit()
+
+    # destroy, then save all changed models since relationships may have been updated after Backbone.Relational had a chance to update
+    else
+      model.destroy(success: -> _.defer(app.saveAllThings))
+      kb.loadUrl('things') # redirect
+
+    return
+
+  onStartEdit: ->
+    @edit_mode(true)
+    return unless model = @model() # not loaded
+    @selected_things(@my_things()) # update: sync 'selected_things' with 'my_things'
+
+  onCancelEdit: ->
     @edit_mode(false)
     return unless model = @model() # not loaded
 
     model.clear(); model.set(@start_attributes)
-    @selected_things(@my_things()) # revert: sync 'selected_things' with 'my_things'
+    @selected_things(@my_things()) # update: sync 'selected_things' with 'my_things'
     return
 })

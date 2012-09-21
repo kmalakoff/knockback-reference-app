@@ -12,10 +12,7 @@
       return function(vm, event) {
         kb.loadUrl(url);
         (!vm || !vm.stopPropagation) || (event = vm);
-        if (event && event.stopPropagation) {
-          event.stopPropagation();
-          return event.preventDefault();
-        }
+        !(event && event.stopPropagation) || (event.stopPropagation(), event.preventDefault());
       };
     };
   }
@@ -26,11 +23,7 @@
       _ref = ko.utils.unwrapObservable(value_accessor());
       for (key in _ref) {
         state = _ref[key];
-        if (ko.utils.unwrapObservable(state)) {
-          $(element).addClass(key);
-        } else {
-          $(element).removeClass(key);
-        }
+        $(element)[ko.utils.unwrapObservable(state) ? 'addClass' : 'removeClass'](key);
       }
     }
   };
@@ -39,19 +32,14 @@
     init: function(element, value_accessor) {
       element.spinner = new Spinner(ko.utils.unwrapObservable(value_accessor())).spin(element);
       return ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
-        if (element.spinner) {
-          element.spinner.stop();
-          return element.spinner = null;
-        }
+        !element.spinner || (element.spinner.stop(), element.spinner = null);
       });
     }
   };
 
   ko.bindingHandlers['fadeIn'] = {
     update: function(element, value_accessor) {
-      if (!!ko.utils.unwrapObservable(value_accessor())) {
-        return $(element).hide().fadeIn(500);
-      }
+      !ko.utils.unwrapObservable(value_accessor()) || $(element).hide().fadeIn(500);
     }
   };
 
@@ -253,7 +241,7 @@
   window.ThingViewModel = kb.ViewModel.extend({
     constructor: function(model, options) {
       var _this = this;
-      _.bindAll(this, 'onEdit', 'onDelete', 'onSubmit', 'onCancel');
+      _.bindAll(this, 'onSubmit', 'onDelete', 'onStartEdit', 'onCancelEdit');
       kb.ViewModel.prototype.constructor.call(this, null, {
         requires: ['id', 'name', 'caption', 'my_owner', 'my_things'],
         factories: {
@@ -264,11 +252,7 @@
           no_share: true
         }, options)
       });
-      this.selected_things = ko.observableArray();
-      this.sorted_thing_links = kb.collectionObservable(app.collections.things, {
-        view_model: ThingLinkViewModel,
-        sort_attribute: 'name'
-      });
+      this.selected_things = kb.collectionObservable(new Backbone.Collection(), app.things_links.shareOptions());
       this.edit_mode = ko.observable(!model);
       if (!model) {
         model = new Thing();
@@ -278,7 +262,6 @@
         var trigger;
         _this.start_attributes = model.toJSON();
         _this.model(model);
-        _this.selected_things(_this.my_things());
         trigger = kb.triggeredObservable(model, 'change');
         _this.is_clean = ko.computed(function() {
           trigger();
@@ -289,28 +272,11 @@
             return (test !== model) && test.get('name') === _this.name();
           });
         };
+        if (_this.edit_mode()) {
+          _this.onStartEdit();
+        }
         return _this.is_loaded(true);
       });
-    },
-    onEdit: function() {
-      this.selected_things(this.my_things());
-      return this.edit_mode(true);
-    },
-    onDelete: function() {
-      var model;
-      if (!(model = this.model())) {
-        return;
-      }
-      if (model.isNew()) {
-        this.onCancel();
-      } else {
-        model.destroy({
-          success: function() {
-            return _.defer(app.saveAllThings);
-          }
-        });
-        kb.loadUrl('things');
-      }
     },
     onSubmit: function() {
       var model, new_thing;
@@ -326,12 +292,36 @@
             return _.defer(app.saveAllThings);
           }
         });
-        this.onCancel();
+        this.onCancelEdit();
       } else {
         app.saveAllThings();
       }
     },
-    onCancel: function() {
+    onDelete: function() {
+      var model;
+      if (!(model = this.model())) {
+        return;
+      }
+      if (model.isNew()) {
+        this.onCancelEdit();
+      } else {
+        model.destroy({
+          success: function() {
+            return _.defer(app.saveAllThings);
+          }
+        });
+        kb.loadUrl('things');
+      }
+    },
+    onStartEdit: function() {
+      var model;
+      this.edit_mode(true);
+      if (!(model = this.model())) {
+        return;
+      }
+      return this.selected_things(this.my_things());
+    },
+    onCancelEdit: function() {
       var model;
       this.edit_mode(false);
       if (!(model = this.model())) {
