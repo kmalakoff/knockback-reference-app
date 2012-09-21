@@ -8370,5 +8370,81 @@ kb.valid = {
     return !NUMBER_REGEXP.test(value);
   }
 };
+
+kb.hasChangedFn = function(model) {
+  var attributes, m;
+  m = null;
+  attributes = null;
+  return function() {
+    var current_model;
+    if (m !== (current_model = ko.utils.unwrapObservable(model))) {
+      m = current_model;
+      attributes = (m ? m.toJSON() : null);
+      return false;
+    }
+    if (!(m && attributes)) {
+      return false;
+    }
+    return !_.isEqual(m.toJSON(), attributes);
+  };
+};
+
+kb.minLengthFn = function(length) {
+  return function(value) {
+    return !value || value.length < length;
+  };
+};
+
+kb.uniqueValueFn = function(model, key, collection) {
+  return function(value) {
+    var c, k, m,
+      _this = this;
+    m = ko.utils.unwrapObservable(model);
+    k = ko.utils.unwrapObservable(key);
+    c = ko.utils.unwrapObservable(collection);
+    if (!(m && k && c)) {
+      return false;
+    }
+    return !!_.find(c.models, function(test) {
+      return (test !== m) && test.get(k) === value;
+    });
+  };
+};
+
+kb.untilTrueFn = function(stand_in, fn, model) {
+  var was_true;
+  was_true = false;
+  if (model && ko.isObservable(model)) {
+    model.subscribe(function() {
+      return was_true = false;
+    });
+  }
+  return function(value) {
+    var f, result;
+    if (!(f = ko.utils.unwrapObservable(fn))) {
+      return stand_in;
+    }
+    was_true |= !!(result = f(ko.utils.unwrapObservable(value)));
+    return (was_true ? result : stand_in);
+  };
+};
+
+kb.untilFalseFn = function(stand_in, fn, model) {
+  var was_false;
+  was_false = false;
+  if (model && ko.isObservable(model)) {
+    model.subscribe(function() {
+      return was_false = false;
+    });
+  }
+  return function(value) {
+    var f, result;
+    if (!(f = ko.utils.unwrapObservable(fn))) {
+      return stand_in;
+    }
+    was_false |= !(result = f(ko.utils.unwrapObservable(value)));
+    return (was_false ? result : stand_in);
+  };
+};
 ; return kb;});
 }).call(this);

@@ -1,33 +1,3 @@
-kb.untilTrueFn = (stand_in, fn, model) ->
-  was_true = false
-  model.subscribe(-> was_true = false) if model and ko.isObservable(model) # reset if the model changes
-  return (value) ->
-    return false unless (f = ko.utils.unwrapObservable(fn))
-    was_true |= not (result = f(value))
-    return (if was_true then result else stand_in)
-
-kb.untilFalseFn = (stand_in, fn, model) ->
-  return (value) -> return not kb.untilTrueFn(stand_in, fn, model)(value)
-
-kb.minLengthFn = (length) ->
-  return (value) -> return not value or value.length < length
-
-kb.uniqueAttributeFn = (model, key, collection) ->
-  return (value) ->
-    m = ko.utils.unwrapObservable(model); k = ko.utils.unwrapObservable(key); c = ko.utils.unwrapObservable(collection)
-    return false if not (m and k and c)
-    return !!_.find(c.models, (test) => (test isnt m) and test.get(k) is value)
-
-kb.hasChangedFn = (model) ->
-  m = null; attributes = null
-  return ->
-    if m isnt (current_model = ko.utils.unwrapObservable(model)) # change in model
-      m = current_model
-      attributes = (if m then m.toJSON() else null)
-      return false
-    return false if not (m and attributes)
-    return !_.isEqual(m.toJSON(), attributes)
-
 window.ThingViewModel = kb.ViewModel.extend({
   constructor: (model, options) ->
     _.bindAll(@, 'onSubmit', 'onDelete', 'onStartEdit', 'onCancelEdit') # bind functions so they can be called from templates
