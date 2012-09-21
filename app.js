@@ -91,6 +91,11 @@
       this.collections = {
         things: new ThingCollection()
       };
+      this.things_links = kb.collectionObservable(app.collections.things, {
+        view_model: ThingLinkViewModel,
+        filters: this.id,
+        sort_attribute: 'name'
+      });
       this.deleteAllThings = function() {
         var model, _i, _len, _ref;
         _ref = _.clone(_this.collections.things.models);
@@ -249,20 +254,17 @@
     constructor: function(model, options) {
       var _this = this;
       _.bindAll(this, 'onEdit', 'onDelete', 'onSubmit', 'onCancel');
-      this.available_things = kb.collectionObservable(app.collections.things, {
-        view_model: ThingLinkViewModel,
-        filters: this.id,
-        sort_attribute: 'name'
-      });
-      this.selected_things = ko.observableArray();
       kb.ViewModel.prototype.constructor.call(this, null, {
         requires: ['id', 'name', 'caption', 'my_owner', 'my_things'],
         factories: {
           'my_owner': ThingLinkViewModel,
           'my_things': ThingLinkCollectionObservable
         },
-        options: this.available_things.shareOptions()
+        options: _.defaults({
+          no_share: true
+        }, options)
       });
+      this.selected_things = ko.observableArray();
       this.sorted_thing_links = kb.collectionObservable(app.collections.things, {
         view_model: ThingLinkViewModel,
         sort_attribute: 'name'
@@ -360,10 +362,6 @@
   });
 
   window.ThingsPageViewModel = function() {
-    this.sorted_thing_links = kb.collectionObservable(app.collections.things, {
-      view_model: ThingLinkViewModel,
-      sort_attribute: 'name'
-    });
     this.things = kb.collectionObservable(app.collections.things, {
       view_model: ThingViewModel
     });

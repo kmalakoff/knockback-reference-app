@@ -3,16 +3,15 @@ window.ThingViewModel = kb.ViewModel.extend({
     _.bindAll(@, 'onEdit', 'onDelete', 'onSubmit', 'onCancel') # bind functions so they can be called from templates
 
     # create the selectable things and required ViewModel observables
-    @available_things = kb.collectionObservable(app.collections.things, {view_model: ThingLinkViewModel, filters: @id, sort_attribute: 'name'})
-    @selected_things = ko.observableArray() # used for selecting things but not updating 'my_things' until onSubmit is called
     kb.ViewModel.prototype.constructor.call(@, null, {
       requires: ['id', 'name', 'caption', 'my_owner', 'my_things'] # ensure all the neccessary kb.Observables exist so they can be bound even if the model is not loaded
       factories: {
         'my_owner': ThingLinkViewModel
         'my_things': ThingLinkCollectionObservable
       }
-      options: @available_things.shareOptions() # share ViewModels so Knockout options binding has same obeservables
+      options: _.defaults({no_share: true}, options) # because we are starting as null and then setting the model later, don't share with 'null constants' ViewModels
     })
+    @selected_things = ko.observableArray() # used for selecting things but not updating 'my_things' until onSubmit is called (we don't want to break and restore other relationships during edit)
 
     # additional functionality - the links at the top of the page and the togglable edit mode
     @sorted_thing_links = kb.collectionObservable(app.collections.things, {view_model: ThingLinkViewModel, sort_attribute: 'name'})

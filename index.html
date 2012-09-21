@@ -78,7 +78,7 @@
     <div class='pane page'><div class='container'>
 
       <!-- * LINKS TO THINGS - TOP * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: kb.loadUrlFn('') }}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('') }}"></div>
 
       <!-- * ADD A THING * -->
       <div class="thumbnail form-actions">
@@ -99,7 +99,7 @@
       </div>
 
       <!-- * LINKS TO THINGS - BOTTOM * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: kb.loadUrlFn('') }}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('')}}"></div>
 
     </div></div>
   </script>
@@ -117,7 +117,7 @@
         <!-- /ko -->
 
         <!-- * BUTTON FOR EACH THING * -->
-        <!-- ko foreach: links -->
+        <!-- ko foreach: app.things_links -->
          <button class='btn btn-small btn-info' data-bind="click: kb.loadUrlFn('things/'+id())"><span data-bind="text: name"></span></button>
         <!-- /ko -->
       </div>
@@ -130,7 +130,7 @@
     <div class='pane page'><div class='container'>
 
       <!-- * LINKS TO THINGS - TOP * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {links: sorted_thing_links, goBack: kb.loadUrlFn('things')}}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('things')}}"></div>
 
       <!-- ko if: is_loaded -->
         <div class='cell thumbnail form-actions' data-bind="template: 'thing_view_embedded'"></div>
@@ -225,7 +225,7 @@
       <!-- * MY THINGS SELECTOR * -->
       <div class='span3'>
         <legend data-bind="text: 'My Things (' + my_things().length + ')'"></legend>
-        <select multiple="multiple" data-bind="options: available_things, optionsText: 'name', selectedOptions: selected_things"></select>
+        <select multiple="multiple" data-bind="options: app.things_links, optionsText: 'name', selectedOptions: selected_things"></select>
       </div>
     </div>
   </script>

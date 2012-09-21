@@ -6475,6 +6475,7 @@ kb.Store = (function() {
       return;
     }
     kb.utils.wrappedObject(observable, obj);
+    options.no_share || obj || (observable.__kb_null = true);
     creator = options.creator ? options.creator : (options.path && options.factory ? options.factory.creatorForPath(obj, options.path) : null);
     if (!creator) {
       creator = observable.constructor;
@@ -6557,11 +6558,8 @@ kb.Store = (function() {
       observable = new creator(obj, options);
     }
     observable || (observable = ko.observable(null));
-    if (!ko.isObservable(observable) && !this.isRegistered(observable)) {
-      this.register(obj, observable, options);
-      if (!obj) {
-        observable.__kb_null = true;
-      }
+    if (!ko.isObservable(observable)) {
+      this.isRegistered(observable) || this.register(obj, observable, options);
     }
     return observable;
   };
@@ -7374,6 +7372,7 @@ kb.CollectionObservable = (function() {
       array = observable();
       array.splice(0, array.length);
     }
+    this._mapper.dispose();
     kb.release(this.filters);
     this.filters = this._col = this.sorted_index_fn = this._mapper = this.create_options = null;
     kb.utils.wrappedDestroy(this);
