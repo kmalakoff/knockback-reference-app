@@ -14,7 +14,7 @@ window.ThingViewModel = kb.ViewModel.extend({
     @selected_things = kb.collectionObservable(new Backbone.Collection(), app.things_links.shareOptions()) # used for selecting things but not updating 'my_things' until onSubmit is called (we don't want to break and restore other relationships during edit)
     @edit_mode = ko.observable(!model) # start in edit if a new model
 
-    # helper syncronize view to the model
+    # helper syncronize view to the model (because we are sharing for new and edit)
     @syncViewToModel = ko.computed(=>
       return unless (current_model = @model())
       @start_attributes = current_model.toJSON()
@@ -41,7 +41,7 @@ window.ThingViewModel = kb.ViewModel.extend({
       app.collections.things.add(model) # add to the collection and set a new model
       @model(new Thing())
 
-    # an existing model, just save and quit editing
+    # save this model and then once saved, save the rest (new models need ids to be saved)
     model.save(null, {success: -> _.defer(app.saveAllThings)})
 
   onDelete: ->
@@ -49,7 +49,7 @@ window.ThingViewModel = kb.ViewModel.extend({
     (@model(new Thing()); return) if model.isNew() # a new model so start editing a new one
 
     # destroy then save all changed models after Backbone.Relational had a chance to update
-    model.destroy(success: -> _.defer(app.saveAllThings))
+    model.destroy({success: -> _.defer(app.saveAllThings)})
     kb.loadUrl('things') # redirect
 
   onStartEdit: ->
