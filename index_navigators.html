@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.css">
   <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-responsive.css">
 
-  <link rel="stylesheet" href="vendor/css/knockback-navigators-0.1.1.css"> <!-- NAV -->
+  <link rel="stylesheet" href="vendor/css/knockback-navigators-0.1.2.css"> <!-- NAV -->
   <style type="text/css">
     /* responsive header sizing */
     .pane-navigator.page  {margin-top: 60px;}
@@ -89,7 +89,7 @@
         <div data-bind="template: {name: 'thing_edit', data: new_thing}"></div>
 
         <div class='span11 pagination-centered'>
-          <a class='btn btn-small btn-primary' data-bind="click: new_thing.onSubmit, visible: new_thing.$name().valid"><i class="icon-plus icon-white"></i><span> Add</span></a>
+          <a class='btn btn-small btn-primary' data-bind="click: new_thing.onSubmit, visible: $enabled() && new_thing.$name().$valid()"><i class="icon-plus icon-white"></i><span> Add</span></a>
           <a class='btn btn-small' data-bind="click: new_thing.onDelete"><i class="icon-arrow-left"></i><span> Clear</span></a>
           <div style="height:10px"></div>
         </div>
@@ -108,27 +108,6 @@
     </div></div>
   </script>
 
-  <!-- SHARED TEMPLATE - THING LINKS BAR-->
-  <script type="text/x-jquery-tmpl" id="thing_links_hortizontal_bar">
-    <div class="btn-toolbar">
-
-      <button class='btn btn-small' data-bind="click: goBack"><i class='icon-step-backward'></i><span> Back</span></button>
-
-      <div class="btn-group">
-        <!-- * DELETE ALL BUTTON IF ON THINGS PAGE * -->
-        <!-- ko if: window.location.hash==='#things' -->
-          <button class='btn btn-small btn-inverse' data-bind="click: app.deleteAllThings">Delete All</button>
-        <!-- /ko -->
-
-        <!-- * BUTTON FOR EACH THING * -->
-        <!-- ko foreach: app.things_links -->
-         <button class='btn btn-small btn-info' data-bind="click: kb.loadUrlFn('things/'+id())"><span data-bind="text: name"></span></button>
-        <!-- /ko -->
-      </div>
-
-    </div>
-   </script>
-
   <!-- PAGE TEMPLATE - THING -->
   <script type="text/x-jquery-tmpl" id="thing_page">
     <div class='pane page'><div class='container'>
@@ -137,7 +116,33 @@
       <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('things')}}"></div>
 
       <!-- ko if: is_loaded -->
-        <div class='cell thumbnail form-actions' data-bind="template: 'thing_view_embedded'"></div>
+        <div class='cell thumbnail form-actions'>
+          <!-- ko ifnot: edit_mode -->
+            <!-- * EDIT MODE TOGGLE * -->
+            <div class='nav'>
+              <a class='pull-right' data-bind="click: onStartEdit"><i class="icon-cog"></i></a>
+            </div>
+
+            <div data-bind="template: 'thing_view_panes'"></div>
+
+          <!-- /ko -->
+
+          <!-- ko if: edit_mode -->
+            <!-- * EDIT MODE TOGGLE * -->
+            <div class='nav'>
+              <a class='pull-right' data-bind="click: onCancelEdit"><i class="icon-arrow-left"></i></a>
+            </div>
+
+            <div data-bind="template: 'thing_edit'"></div>
+
+            <!-- * FORM BUTTONS * -->
+            <div class='span11 pagination-centered'>
+              <a class='btn btn-success' data-bind="click: onSubmit, visible: $name().valid"><i class="icon-ok icon-white"></i> Submit</a>
+              <a class='btn btn-danger' data-bind="click: onDelete"><i class="icon-remove icon-white"></i> Delete</a>
+              <div style="height:10px"></div>
+            </div>
+          <!-- /ko -->
+        </div>
       <!-- /ko -->
 
       <!-- * LOADING SPINNER * -->
@@ -151,38 +156,8 @@
     </div></div>
   </script>
 
-  <!-- SUBVIEW TEMPLATE - THING VIEW FOR EMBEDDED IN PAGE -->
-  <script type="text/x-jquery-tmpl" id="thing_view_embedded">
-    <!-- ko ifnot: edit_mode -->
-      <!-- * EDIT MODE TOGGLE * -->
-      <div class='nav'>
-        <a class='pull-right' data-bind="click: onStartEdit"><i class="icon-cog"></i></a>
-      </div>
-
-      <!-- * CHOOSE TUTORIAL OR EXTENDED VIEW TEMPLATE * -->
-      <div data-bind="template: 'thing_view'"></div>
-
-    <!-- /ko -->
-
-    <!-- ko if: edit_mode -->
-      <!-- * EDIT MODE TOGGLE * -->
-      <div class='nav'>
-        <a class='pull-right' data-bind="click: onCancel"><i class="icon-arrow-left"></i></a>
-      </div>
-
-      <div data-bind="template: 'thing_edit'"></div>
-
-      <!-- * FORM BUTTONS * -->
-      <div class='span11 pagination-centered'>
-        <a class='btn btn-success' data-bind="click: onSubmit, visible: $name().valid"><i class="icon-ok icon-white"></i> Submit</a>
-        <a class='btn btn-danger' data-bind="click: onDelete"><i class="icon-remove icon-white"></i> Delete</a>
-        <div style="height:10px"></div>
-      </div>
-    <!-- /ko -->
-  </script>
-
-  <!-- SUBVIEW TEMPLATE - THING VIEW MODE -->
-  <script type="text/x-jquery-tmpl" id="thing_view">
+  <!-- SUBVIEW TEMPLATE - THING VIEW MODE WITH PANES --> <!-- NAV -->
+  <script type="text/x-jquery-tmpl" id="thing_view_panes">
     <div class='row'>
 
       <!-- * MY INFORMATION * -->
@@ -207,6 +182,28 @@
           </div>
         </div>
       </div>
+    </div>
+  </script>
+
+  <!-- SUBVIEW TEMPLATE - THING VIEW MODE -->
+  <script type="text/x-jquery-tmpl" id="thing_view">
+    <div class='row'>
+
+      <!-- * MY INFORMATION * -->
+      <div class='span2'>
+        <legend data-bind="text: name"></legend>
+        <p>Caption: <span data-bind="text: caption"></span></p>
+        <p>Owner: <span data-bind="text: my_owner().name"></span></p>
+      </div>
+
+      <!-- * MY THINGS LINKS * -->
+      <div class='span3'>
+        <legend data-bind="text: 'My Things (' + my_things().length + ')'"></legend>
+        <div class="nav" data-bind="foreach: my_things">
+          <button class='btn btn-small btn-warning' data-bind="click: kb.loadUrlFn('things/'+id()), text: name"></button>
+        </div>
+      </div>
+
     </div>
   </script>
 
@@ -235,19 +232,40 @@
 
       <!-- * MY THINGS SELECTOR * -->
       <div class='span3'>
-        <legend data-bind="text: 'My Things (' + my_things().length + ')'"></legend>
+        <legend data-bind="text: 'My Things (' + selected_things().length + ')'"></legend>
         <select multiple="multiple" data-bind="options: app.things_links, optionsText: 'name', selectedOptions: selected_things"></select>
       </div>
     </div>
   </script>
+
+  <!-- SHARED TEMPLATE - THING LINKS BAR-->
+  <script type="text/x-jquery-tmpl" id="thing_links_hortizontal_bar">
+    <div class="btn-toolbar">
+
+      <button class='btn btn-small' data-bind="click: goBack"><i class='icon-step-backward'></i><span> Back</span></button>
+
+      <div class="btn-group">
+        <!-- * DELETE ALL BUTTON IF ON THINGS PAGE * -->
+        <!-- ko if: window.location.hash==='#things' -->
+          <button class='btn btn-small btn-inverse' data-bind="click: app.deleteAllThings">Delete All</button>
+        <!-- /ko -->
+
+        <!-- * BUTTON FOR EACH THING * -->
+        <!-- ko foreach: app.things_links -->
+         <button class='btn btn-small btn-info' data-bind="click: kb.loadUrlFn('things/'+id())"><span data-bind="text: name"></span></button>
+        <!-- /ko -->
+      </div>
+
+    </div>
+   </script>
 
   <!-- Import jQuery before the rest-->
   <script src="vendor/js/jquery-1.8.0.js"></script>
 
   <!-- Knockback and optional libraries-->
   <script src="vendor/js/knockback-full-stack-0.16.7.js"></script>
-  <script src="vendor/js/knockback-page-navigator-panes-0.1.1.js"></script> <!-- NAV -->
-  <script src="vendor/js/knockback-sample-transitions-jquery-0.1.1.js"></script> <!-- NAV -->
+  <script src="vendor/js/knockback-page-navigator-panes-0.1.2.js"></script> <!-- NAV -->
+  <script src="vendor/js/knockback-sample-transitions-jquery-0.1.2.js"></script> <!-- NAV -->
   <script src="vendor/js/backbone-modelref-0.1.5.js"></script>
   <script src="vendor/js/backbone-relational-0.6.0.js"></script>
   <script src="vendor/js/knockback-statistics-0.16.7.js"></script>

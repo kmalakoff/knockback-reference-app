@@ -15,7 +15,7 @@ class window.ApplicationViewModel
       things: new ThingCollection()
     @things_links = kb.collectionObservable(app.collections.things, {view_model: ThingLinkViewModel, filters: @id, sort_attribute: 'name'})
     @deleteAllThings = => model.destroy() for model in _.clone(@collections.things.models); return
-    @saveAllThings = => (model.save() if model.hasChanged()) for model in @collections.things.models; return
+    @saveAllThings = => model.save() for model in @collections.things.models; return
     _.delay((=> @collections.things.fetch()), COLLECTION_LOAD_DELAY) # load things collection late (to demonstrate Backbone.ModelRef)
 
     #########################

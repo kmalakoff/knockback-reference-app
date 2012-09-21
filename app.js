@@ -97,9 +97,7 @@
         _ref = _this.collections.things.models;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           model = _ref[_i];
-          if (model.hasChanged()) {
-            model.save();
-          }
+          model.save();
         }
       };
       _.delay((function() {
@@ -238,6 +236,70 @@
 
   })(ApplicationViewModel);
 
+  kb.untilTrueFn = function(stand_in, fn, model) {
+    var was_true;
+    was_true = false;
+    if (model && ko.isObservable(model)) {
+      model.subscribe(function() {
+        return was_true = false;
+      });
+    }
+    return function(value) {
+      var f, result;
+      if (!(f = ko.utils.unwrapObservable(fn))) {
+        return false;
+      }
+      was_true |= !(result = f(value));
+      return (was_true ? result : stand_in);
+    };
+  };
+
+  kb.untilFalseFn = function(stand_in, fn, model) {
+    return function(value) {
+      return !kb.untilTrueFn(stand_in, fn, model)(value);
+    };
+  };
+
+  kb.minLengthFn = function(length) {
+    return function(value) {
+      return !value || value.length < length;
+    };
+  };
+
+  kb.uniqueAttributeFn = function(model, key, collection) {
+    return function(value) {
+      var c, k, m,
+        _this = this;
+      m = ko.utils.unwrapObservable(model);
+      k = ko.utils.unwrapObservable(key);
+      c = ko.utils.unwrapObservable(collection);
+      if (!(m && k && c)) {
+        return false;
+      }
+      return !!_.find(c.models, function(test) {
+        return (test !== m) && test.get(k) === value;
+      });
+    };
+  };
+
+  kb.hasChangedFn = function(model) {
+    var attributes, m;
+    m = null;
+    attributes = null;
+    return function() {
+      var current_model;
+      if (m !== (current_model = ko.utils.unwrapObservable(model))) {
+        m = current_model;
+        attributes = (m ? m.toJSON() : null);
+        return false;
+      }
+      if (!(m && attributes)) {
+        return false;
+      }
+      return !_.isEqual(m.toJSON(), attributes);
+    };
+  };
+
   window.ThingViewModel = kb.ViewModel.extend({
     constructor: function(model, options) {
       var _this = this;
@@ -246,7 +308,7 @@
         requires: ['id', 'name', 'caption', 'my_owner', 'my_things'],
         factories: {
           'my_owner': ThingLinkViewModel,
-          'my_things': ThingLinkCollectionObservable
+          'my_things': ThingCollectionObservable
         },
         options: _.defaults({
           no_share: true
@@ -254,24 +316,18 @@
       });
       this.selected_things = kb.collectionObservable(new Backbone.Collection(), app.things_links.shareOptions());
       this.edit_mode = ko.observable(!model);
-      if (!model) {
-        model = new Thing();
-      }
+      this.syncViewToModel = ko.computed(function() {
+        var current_model;
+        if (!(current_model = _this.model())) {
+          return;
+        }
+        _this.start_attributes = current_model.toJSON();
+        return _this.selected_things(current_model.get('my_things').models);
+      });
+      model || (model = new Thing());
       this.is_loaded = ko.observable(model && model.isLoaded());
       model.bindLoadingStates(function(model) {
-        var trigger;
-        _this.start_attributes = model.toJSON();
         _this.model(model);
-        trigger = kb.triggeredObservable(model, 'change');
-        _this.is_clean = ko.computed(function() {
-          trigger();
-          return _.isEqual(model.toJSON(), _this.start_attributes);
-        });
-        _this.nameTaken = function() {
-          return !!_.find(app.collections.things.models, function(test) {
-            return (test !== model) && test.get('name') === _this.name();
-          });
-        };
         if (_this.edit_mode()) {
           _this.onStartEdit();
         }
@@ -279,23 +335,21 @@
       });
     },
     onSubmit: function() {
-      var model, new_thing;
+      var model;
       this.edit_mode(false);
       if (!(model = this.model())) {
         return;
       }
-      this.my_things(this.selected_things());
+      this.my_things(this.selected_things.collection().models);
       if (model.isNew()) {
-        app.collections.things.add(new_thing = new Thing(model.toJSON()));
-        new_thing.save(null, {
-          success: function() {
-            return _.defer(app.saveAllThings);
-          }
-        });
-        this.onCancelEdit();
-      } else {
-        app.saveAllThings();
+        app.collections.things.add(model);
+        this.model(new Thing());
       }
+      return model.save(null, {
+        success: function() {
+          return _.defer(app.saveAllThings);
+        }
+      });
     },
     onDelete: function() {
       var model;
@@ -303,33 +357,37 @@
         return;
       }
       if (model.isNew()) {
-        this.onCancelEdit();
-      } else {
-        model.destroy({
-          success: function() {
-            return _.defer(app.saveAllThings);
-          }
-        });
-        kb.loadUrl('things');
-      }
-    },
-    onStartEdit: function() {
-      var model;
-      this.edit_mode(true);
-      if (!(model = this.model())) {
+        this.model(new Thing());
         return;
       }
-      return this.selected_things(this.my_things());
+      model.destroy({
+        success: function() {
+          return _.defer(app.saveAllThings);
+        }
+      });
+      return kb.loadUrl('things');
+    },
+    onStartEdit: function() {
+      this.edit_mode(true);
+      return this.syncViewToModel();
     },
     onCancelEdit: function() {
       var model;
       this.edit_mode(false);
-      if (!(model = this.model())) {
-        return;
+      if ((model = this.model())) {
+        model.clear();
+        model.set(this.start_attributes);
       }
-      model.clear();
-      model.set(this.start_attributes);
-      this.selected_things(this.my_things());
+      return this.syncViewToModel();
+    }
+  });
+
+  window.ThingCollectionObservable = kb.CollectionObservable.extend({
+    constructor: function(collection, options) {
+      return kb.CollectionObservable.prototype.constructor.call(this, collection, {
+        view_model: ThingViewModel,
+        options: options
+      });
     }
   });
 
@@ -337,15 +395,6 @@
     constructor: function(model, options) {
       kb.ViewModel.prototype.constructor.call(this, model, {
         keys: ['name', 'id'],
-        options: options
-      });
-    }
-  });
-
-  window.ThingLinkCollectionObservable = kb.CollectionObservable.extend({
-    constructor: function(collection, options) {
-      return kb.CollectionObservable.prototype.constructor.call(this, collection, {
-        view_model: ThingLinkViewModel,
         options: options
       });
     }
