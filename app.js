@@ -240,34 +240,32 @@
     constructor: function(model, options) {
       var _this = this;
       _.bindAll(this, 'onSubmit', 'onDelete', 'onStartEdit', 'onCancelEdit');
-      kb.ViewModel.prototype.constructor.call(this, null, {
+      kb.ViewModel.prototype.constructor.call(this, model, {
         requires: ['id', 'name', 'caption', 'my_owner', 'my_things'],
         factories: {
           'my_owner': ThingLinkViewModel,
           'my_things': ThingCollectionObservable
         },
-        options: _.defaults({
-          no_share: true
-        }, options)
+        options: options
       });
-      this.selected_things = kb.collectionObservable(new Backbone.Collection(), app.things_links.shareOptions());
+      this.selected_things = kb.collectionObservable(new Backbone.Collection(), {
+        options: app.things_links.shareOptions()
+      });
       this.edit_mode = ko.observable(!model);
+      this.is_loaded = ko.observable();
       this.syncViewToModel = ko.computed(function() {
         var current_model;
-        if (!(current_model = _this.model())) {
-          return;
+        if ((current_model = _this.model())) {
+          _this.start_attributes = current_model.toJSON();
+          _this.selected_things(current_model.get('my_things').models);
+          if (window.location.hash !== '#things') {
+            app.things_links.filters(_this.id);
+          }
+          if (_this.edit_mode()) {
+            _this.onStartEdit();
+          }
         }
-        _this.start_attributes = current_model.toJSON();
-        return _this.selected_things(current_model.get('my_things').models);
-      });
-      model || (model = new Thing());
-      this.is_loaded = ko.observable(model && model.isLoaded());
-      model.bindLoadingStates(function(model) {
-        _this.model(model);
-        if (_this.edit_mode()) {
-          _this.onStartEdit();
-        }
-        return _this.is_loaded(true);
+        return _this.is_loaded(!!current_model);
       });
     },
     onSubmit: function() {
@@ -330,7 +328,7 @@
   window.ThingLinkViewModel = kb.ViewModel.extend({
     constructor: function(model, options) {
       kb.ViewModel.prototype.constructor.call(this, model, {
-        keys: ['name', 'id'],
+        keys: ['id', 'name'],
         options: options
       });
     }
@@ -340,7 +338,7 @@
     this.things = kb.collectionObservable(app.collections.things, {
       view_model: ThingViewModel
     });
-    this.new_thing = new ThingViewModel();
+    this.new_thing = new ThingViewModel(new Thing());
   };
 
 }).call(this);
