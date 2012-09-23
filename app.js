@@ -216,7 +216,7 @@
           create: function() {
             return kb.renderTemplate('things_page', new ThingsPageViewModel());
           },
-          transition: 'NavigationSlide'
+          transition: 'Slide'
         });
       }));
       router.route('things/:id', null, page_navigator.dispatcher(function(id) {
@@ -226,7 +226,7 @@
           create: function() {
             return kb.renderTemplate('thing_page', new ThingViewModel(model));
           },
-          transition: 'CoverVertical'
+          transition: 'SlideUp'
         });
       }));
       return router;

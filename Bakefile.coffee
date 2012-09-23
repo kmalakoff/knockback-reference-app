@@ -20,6 +20,7 @@ module.exports =
       'cp -v knockback/lib/knockback-statistics.js vendor/js/knockback-statistics.js'
 
       'cp -v knockback-navigators/knockback-page-navigator-panes.js vendor/js/knockback-page-navigator-panes.js'
-      'cp -v knockback-navigators/lib/knockback-sample-transitions-jquery.js vendor/js/knockback-sample-transitions-jquery.js'
       'cp -v knockback-navigators/knockback-navigators.css vendor/css/knockback-navigators.css'
+      'cp -v knockback-navigators/knockback-transitions.js vendor/js/knockback-transitions.js'
+      'cp -v knockback-navigators/knockback-transitions.css vendor/css/knockback-transitions.css'
     ]

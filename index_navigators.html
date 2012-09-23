@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap-responsive.css">
 
   <link rel="stylesheet" href="vendor/css/knockback-navigators-0.1.2.css"> <!-- NAV -->
+  <link rel="stylesheet" href="vendor/css/knockback-transitions-0.1.2.css"> <!-- NAV -->
   <style type="text/css">
     /* responsive header sizing */
     .pane-navigator.page  {margin-top: 60px;}
@@ -175,7 +176,7 @@
         <button class='btn btn-small' data-bind="click: kb.nextPane"><i class='icon-step-forward'></i></button>
 
         <div style='position: relative; min-height: 180px'>
-          <div class='pane-navigator' data-bind="PaneNavigator: {transition: 'NavigationSlide'}, foreach: my_things">
+          <div class='pane-navigator' data-bind="PaneNavigator: {transition: 'Slide'}, foreach: my_things">
             <div class='pane'>
               <div class='cell thumbnail form-actions' data-bind="click: kb.loadUrlFn('things/'+id()), template: 'thing_view'"></div>
             </div>
@@ -266,7 +267,7 @@
   <!-- Knockback and optional libraries-->
   <script src="vendor/js/knockback-full-stack-0.16.7.js"></script>
   <script src="vendor/js/knockback-page-navigator-panes-0.1.2.js"></script> <!-- NAV -->
-  <script src="vendor/js/knockback-sample-transitions-jquery-0.1.2.js"></script> <!-- NAV -->
+  <script src="vendor/js/knockback-transitions-0.1.2.js"></script> <!-- NAV -->
   <script src="vendor/js/backbone-modelref-0.1.5.js"></script>
   <script src="vendor/js/backbone-relational-0.6.0.js"></script>
   <script src="vendor/js/knockback-statistics-0.16.7.js"></script>
