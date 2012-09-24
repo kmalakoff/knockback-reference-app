@@ -62,10 +62,17 @@ class window.ApplicationViewModel
 
   createRouter: ->
     router = new Backbone.Router()
+
     router.route('', null, => @loadPage(kb.renderTemplate('home', {})))
-    router.route('things', null, => @loadPage(kb.renderTemplate('things_page', new ThingsPageViewModel())))
+
+    router.route('things', null, =>
+      @loadPage(kb.renderTemplate('things_page', new ThingsPageViewModel()))
+      app.things_links.filters(null) # remove filter
+    )
+
     router.route('things/:id', null, (id) =>
       model = @collections.things.get(id) or new Backbone.ModelRef(@collections.things, id)
-      @loadPage(kb.renderTemplate('thing_page', new ThingViewModel(model)))
+      @loadPage(kb.renderTemplate('thing_page', view_model = new ThingViewModel(model)))
+      app.things_links.filters(view_model.id) # add filter
     )
     return router

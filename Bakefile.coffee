@@ -4,6 +4,11 @@ module.exports =
     output: '..'
     directories: 'app'
 
+  app_navigators:
+    join: 'app-navigators.js'
+    output: '..'
+    directories: 'app_navigators'
+
   app_management:
     join: 'app-management.js'
     output: '..'

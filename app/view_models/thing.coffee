@@ -12,25 +12,28 @@ window.ThingViewModel = kb.ViewModel.extend({
       options: options
     })
     @selected_things = kb.collectionObservable(new Backbone.Collection(), {options: app.things_links.shareOptions()}) # used for selecting things but not updating 'my_things' until onSubmit is called (we don't want to break and restore other relationships during edit)
-    @edit_mode = ko.observable(!model) # start in edit if a new model
+    @edit_mode = ko.observable() # start in edit if a new model
     @is_loaded = ko.observable() # loading spinner
 
     # helper syncronize view to the model
-    @syncViewToModel = ko.computed(=>
-      # model is loaded
-      if (current_model = @model())
-        @start_attributes = current_model.toJSON() # save attributes for restore
-        @selected_things(current_model.get('my_things').models) # sync selected things
-        app.things_links.filters(@id) if window.location.hash isnt '#things' # add a filter to the available models
-        @onStartEdit() if @edit_mode()
+    previous_model = null
+    @_syncViewToModel = ko.computed(=>
+      if (current_model = @model()) # model is loaded
+        # model changed
+        if (changed = (previous_model isnt current_model))
+          previous_model = current_model; @start_attributes = current_model.toJSON() # save attributes for restore
+          @edit_mode(current_model.isNew()) # start in edit if a new model
+
+        # set up the drop down selector
+        @selected_things.collection().reset(current_model.get('my_things').models) if @edit_mode()
+
       @is_loaded(!!current_model) # loading spinner
     )
     return
 
   onSubmit: ->
-    @edit_mode(false)
     return unless model = @model() # not loaded
-    @my_things(@selected_things.collection().models) # update: sync 'my_things' with 'selected_things'
+    model.get('my_things').reset(@selected_things.collection().models) # update: sync 'my_things' with 'selected_things'
 
     # a new model so add to the collection and reset the view
     if model.isNew()
@@ -39,6 +42,7 @@ window.ThingViewModel = kb.ViewModel.extend({
 
     # save this model and then once saved, save the rest (new models need ids to be saved)
     model.save(null, {success: -> _.defer(app.saveAllThings)})
+    @edit_mode(false)
 
   onDelete: ->
     return unless model = @model() # not loaded
@@ -48,12 +52,9 @@ window.ThingViewModel = kb.ViewModel.extend({
     model.destroy({success: -> _.defer(app.saveAllThings)})
     kb.loadUrl('things') # redirect
 
-  onStartEdit: ->
-    @edit_mode(true)
-    @syncViewToModel()
-
+  onStartEdit: -> @edit_mode(true)
   onCancelEdit: ->
+    return unless model = @model() # not loaded
+    (model.clear(); model.set(@start_attributes)) # reset loaded model
     @edit_mode(false)
-    (model.clear(); model.set(@start_attributes)) if (model = @model()) # reset loaded model
-    @syncViewToModel()
 })
