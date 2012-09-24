@@ -90,7 +90,7 @@
         <div data-bind="template: {name: 'thing_edit', data: new_thing}"></div>
 
         <div class='span11 pagination-centered'>
-          <a class='btn btn-small btn-primary' data-bind="click: new_thing.onSubmit, visible: new_thing.$name().$enabled && new_thing.$name().$valid"><i class="icon-plus icon-white"></i><span> Add</span></a>
+          <a class='btn btn-small btn-primary' data-bind="click: new_thing.onSubmit, visible: new_thing.$name().$enabled && new_thing.$name().$valid && new_thing.$name_unfiltered().$valid"><i class="icon-plus icon-white"></i><span> Add</span></a>
           <a class='btn btn-small' data-bind="click: new_thing.onDelete"><i class="icon-arrow-left"></i><span> Clear</span></a>
           <div style="height:10px"></div>
         </div>
@@ -138,7 +138,7 @@
 
             <!-- * FORM BUTTONS * -->
             <div class='span11 pagination-centered'>
-              <a class='btn btn-success' data-bind="click: onSubmit, visible: $name().$valid"><i class="icon-ok icon-white"></i> Submit</a>
+              <a class='btn btn-success' data-bind="click: onSubmit, visible: $name().$valid && $name_unfiltered().$valid"><i class="icon-ok icon-white"></i> Submit</a>
               <a class='btn btn-danger' data-bind="click: onDelete"><i class="icon-remove icon-white"></i> Delete</a>
               <div style="height:10px"></div>
             </div>
@@ -217,9 +217,9 @@
         <legend>Me</legend>
         <form class="form-horizontal" data-bind="inject: kb.formValidator, validation_options: {enable: kb.hasChangedFn(model), priorities: ['required', 'unique', 'length_filtered'] }">
 
-          <div class="control-group" data-bind="classes: {error: $name().$error_count}">
+          <div class="control-group" data-bind="classes: {error: $name().$error_count}, inject: {$name_unfiltered: kb.valueValidator(name, {name_length: kb.minLengthFn(4)})}">
             <label class="control-label">Name</label>
-            <input type="text" name="name" data-bind="value: name, valueUpdate: 'keyup', validations: {unique: kb.uniqueValueFn(model, 'name', app.things_links.collection), length_filtered: kb.untilFalseFn(false, kb.minLengthFn(4), model), length: kb.minLengthFn(4)}" required>
+            <input type="text" name="name" data-bind="value: name, valueUpdate: 'keyup', validations: {unique: kb.uniqueValueFn(model, 'name', app.things_links.collection), length_filtered: kb.untilFalseFn(false, kb.minLengthFn(4), model)}" required>
             <span data-bind="visible: $name().$active_error == 'required'" class="help-inline">Things like names</span>
             <span data-bind="visible: $name().$active_error == 'unique', text: name() +' already taken'" class="help-inline"></span>
             <span data-bind="visible: $name().$active_error == 'length_filtered'" class="help-inline">Must be at least 4 characters</span>

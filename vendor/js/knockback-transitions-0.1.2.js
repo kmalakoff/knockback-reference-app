@@ -32,7 +32,7 @@ kb.transitions || (kb.transitions = {});
 
 kb.fallback_transitions || (kb.fallback_transitions = {});
 
-kb.MAX_TRANSITION = 800;
+kb.MAX_TRANSITION = 2000;
 
 kb.transitions.END_EVENT = (function() {
   var END_EVENT_NAMES, el, event, style;
