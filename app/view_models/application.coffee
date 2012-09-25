@@ -16,7 +16,6 @@ class window.ApplicationViewModel
     @things_links = kb.collectionObservable(app.collections.things, {view_model: ThingLinkViewModel, filters: @id, sort_attribute: 'name'})
     @deleteAllThings = => model.destroy() for model in _.clone(@collections.things.models); return
     @saveAllThings = => model.save() for model in @collections.things.models; return
-    _.delay((=> @collections.things.fetch()), COLLECTION_LOAD_DELAY) # load things collection late (to demonstrate Backbone.ModelRef)
 
     #########################
     # Header
@@ -40,6 +39,8 @@ class window.ApplicationViewModel
     @goToApplication = => window.location.pathname = window.location.pathname.replace('index_navigators.html', 'index.html') if window.location.pathname.search('index_navigators.html') >= 0
     @goToNavigatorsApplication = => window.location.pathname = window.location.pathname.replace('index.html', 'index_navigators.html') if window.location.pathname.search('index.html') >= 0
 
+    return
+
   #########################
   # Routing
   #########################
@@ -48,14 +49,20 @@ class window.ApplicationViewModel
   afterBinding: (vm, el) ->
     @router = @createRouter(el)
     Backbone.history.bind('route', => @active_url(window.location.hash)) # synchronize active url
-    @router.route('no_app', null, =>
-      @loadPage(null)
-      Backbone.Relational.store.clear() # clean up caches so can check used memory
-    )
     Backbone.history.start({hashChange: true})
+
+  loadApp: (load) ->
+    return if @is_loaded is load # already in the state
+    if @is_loaded = load
+      _.delay((=> @collections.things.fetch()), COLLECTION_LOAD_DELAY) # load things collection late (to demonstrate Backbone.ModelRef)
+    else
+      @collections.things.reset()
+      kb.utils.wrappedStore(@things_links).clear() # release the store
+      Backbone.Relational.store.clear() # clean up caches so can check used memory
 
   loadPage: (el) ->
     ko.removeNode(@active_el) if @active_el # remove previous
+    @loadApp(!!el)
     return unless @active_el = el # no new page
     $('.pane-navigator.page').append(el)
     $(el).addClass('active')
@@ -75,4 +82,7 @@ class window.ApplicationViewModel
       @loadPage(kb.renderTemplate('thing_page', view_model = new ThingViewModel(model)))
       app.things_links.filters(view_model.id) # add filter
     )
+
+    router.route('no_app', null, => @loadPage(null))
+
     return router

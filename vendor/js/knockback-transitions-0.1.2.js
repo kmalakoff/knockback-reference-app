@@ -56,19 +56,21 @@ kb.transitions.END_EVENT = (function() {
 kb.active_transitions = (kb.transitions.END_EVENT === 'kbTransitionEnd' ? kb.fallback_transitions : kb.transitions);
 
 $.fn.startTransition = function(classes, callback) {
-  var cleanupCallback,
+  var cleanupCallback, timeout,
     _this = this;
   if (typeof classes === 'function') {
     callback = classes;
     classes = null;
   }
+  timeout = null;
   cleanupCallback = function() {
     _this.off(kb.transitions.END_EVENT, cleanupCallback);
+    clearTimeout(timeout);
     return !callback || callback();
   };
   this.one(kb.transitions.END_EVENT, cleanupCallback);
   this.addClass(classes);
-  setTimeout(cleanupCallback, kb.MAX_TRANSITION);
+  timeout = setTimeout(cleanupCallback, kb.MAX_TRANSITION);
 };
 
 $.fn.stopTransition = function() {

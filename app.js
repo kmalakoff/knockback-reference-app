@@ -98,9 +98,6 @@
           model.save();
         }
       };
-      _.delay((function() {
-        return _this.collections.things.fetch();
-      }), COLLECTION_LOAD_DELAY);
       this.active_url = ko.observable(window.location.hash);
       this.nav_items = ko.observableArray([
         {
@@ -136,6 +133,7 @@
           return window.location.pathname = window.location.pathname.replace('index.html', 'index_navigators.html');
         }
       };
+      return;
     }
 
     ApplicationViewModel.prototype.afterBinding = function(vm, el) {
@@ -144,19 +142,32 @@
       Backbone.history.bind('route', function() {
         return _this.active_url(window.location.hash);
       });
-      this.router.route('no_app', null, function() {
-        _this.loadPage(null);
-        return Backbone.Relational.store.clear();
-      });
       return Backbone.history.start({
         hashChange: true
       });
+    };
+
+    ApplicationViewModel.prototype.loadApp = function(load) {
+      var _this = this;
+      if (this.is_loaded === load) {
+        return;
+      }
+      if (this.is_loaded = load) {
+        return _.delay((function() {
+          return _this.collections.things.fetch();
+        }), COLLECTION_LOAD_DELAY);
+      } else {
+        this.collections.things.reset();
+        kb.utils.wrappedStore(this.things_links).clear();
+        return Backbone.Relational.store.clear();
+      }
     };
 
     ApplicationViewModel.prototype.loadPage = function(el) {
       if (this.active_el) {
         ko.removeNode(this.active_el);
       }
+      this.loadApp(!!el);
       if (!(this.active_el = el)) {
         return;
       }
@@ -180,6 +191,9 @@
         model = _this.collections.things.get(id) || new Backbone.ModelRef(_this.collections.things, id);
         _this.loadPage(kb.renderTemplate('thing_page', view_model = new ThingViewModel(model)));
         return app.things_links.filters(view_model.id);
+      });
+      router.route('no_app', null, function() {
+        return _this.loadPage(null);
       });
       return router;
     };

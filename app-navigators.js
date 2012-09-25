@@ -12,13 +12,15 @@
     }
 
     ApplicationNavigatorsViewModel.prototype.createRouter = function(el) {
-      var clearFilter, page_navigator, router;
+      var clearFilter, page_navigator, router,
+        _this = this;
       page_navigator = new kb.PageNavigatorPanes($(el).find('.pane-navigator.page')[0]);
       clearFilter = ko.computed(function() {
         var _ref;
         if (((_ref = page_navigator.activePage()) != null ? _ref.url : void 0) === 'things') {
-          return app.things_links.filters(null);
+          app.things_links.filters(null);
         }
+        return _this.loadApp(!!page_navigator.activePage());
       });
       router = new Backbone.Router();
       router.route('', null, page_navigator.dispatcher(function() {
@@ -41,17 +43,20 @@
         });
       }));
       router.route('things/:id', null, page_navigator.dispatcher(function(id) {
-        var model;
-        model = app.collections.things.get(id) || new Backbone.ModelRef(app.collections.things, id);
         return page_navigator.loadPage({
           create: function() {
-            var view_model;
-            kb.renderTemplate('thing_page', view_model = new ThingViewModel(model));
-            return app.things_links.filters(view_model.id);
+            var model, view_model;
+            model = app.collections.things.get(id) || new Backbone.ModelRef(app.collections.things, id);
+            view_model = new ThingViewModel(model);
+            app.things_links.filters(view_model.id);
+            return kb.renderTemplate('thing_page', view_model);
           },
           transition: 'SlideUp'
         });
       }));
+      router.route('no_app', null, function() {
+        return page_navigator.clear();
+      });
       return router;
     };
 
