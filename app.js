@@ -237,11 +237,21 @@
       });
     },
     onSubmit: function() {
-      var model;
+      var model, my_things, thing, _i, _j, _len, _len1, _ref, _ref1;
       if (!(model = this.model())) {
         return;
       }
-      model.get('my_things').reset(this.selected_things.collection().models);
+      my_things = model.get('my_things');
+      _ref = my_things.models.slice();
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        thing = _ref[_i];
+        my_things.remove(thing);
+      }
+      _ref1 = this.selected_things.collection().models;
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        thing = _ref1[_j];
+        my_things.add(thing);
+      }
       if (model.isNew()) {
         app.collections.things.add(model);
         this.model(new Thing());

@@ -33,7 +33,12 @@ window.ThingViewModel = kb.ViewModel.extend({
 
   onSubmit: ->
     return unless model = @model() # not loaded
-    model.get('my_things').reset(@selected_things.collection().models) # update: sync 'my_things' with 'selected_things'
+
+    # Workaround: Backbone-Relational doesn't clear reverse relations on reset
+    # model.get('my_things').reset(@selected_things.collection().models) # update: sync 'my_things' with 'selected_things'
+    my_things = model.get('my_things')
+    my_things.remove(thing) for thing in my_things.models.slice()
+    my_things.add(thing) for thing in @selected_things.collection().models
 
     # a new model so add to the collection and reset the view
     if model.isNew()
