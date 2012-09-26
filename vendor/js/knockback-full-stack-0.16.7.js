@@ -5963,7 +5963,7 @@ ko.exportSymbol('nativeTemplateEngine', ko.nativeTemplateEngine);
   Dependencies: Knockout.js, Backbone.js, and Underscore.js.
 */
 
-var Backbone, EMAIL_REGEXP, KB_TYPE_ARRAY, KB_TYPE_COLLECTION, KB_TYPE_MODEL, KB_TYPE_SIMPLE, KB_TYPE_UNKNOWN, NUMBER_REGEXP, URL_REGEXP, addStatisticsEvent, arraySlice, arraySplice, callOrGet, collapseOptions, kb, ko, legacyWarning, onReady, throwMissing, throwUnexpected, _, _argumentsAddKey, _unwrapModels, _wrappedKey,
+var Backbone, COMPARE_ASCENDING, COMPARE_DESCENDING, COMPARE_EQUAL, EMAIL_REGEXP, KB_TYPE_ARRAY, KB_TYPE_COLLECTION, KB_TYPE_MODEL, KB_TYPE_SIMPLE, KB_TYPE_UNKNOWN, NUMBER_REGEXP, URL_REGEXP, addStatisticsEvent, arraySlice, callOrGet, collapseOptions, kb, ko, onReady, _, _argumentsAddKey, _arraySplice, _legacyWarning, _throwMissing, _throwUnexpected, _unwrapModels, _unwrapObservable, _wrappedKey,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 kb = (function() {
@@ -6038,8 +6038,8 @@ kb = (function() {
   };
 
   kb.releaseOnNodeRemove = function(view_model, node) {
-    view_model || throwUnexpected(this, 'missing view model');
-    node || throwUnexpected(this, 'missing node');
+    view_model || _throwUnexpected(this, 'missing view model');
+    node || _throwUnexpected(this, 'missing node');
     return ko.utils.domNodeDisposal.addDisposeCallback(node, function() {
       return kb.release(view_model);
     });
@@ -6064,7 +6064,7 @@ kb = (function() {
     if (options == null) {
       options = {};
     }
-    legacyWarning('kb.renderAutoReleasedTemplate', '0.16.3', 'Please use kb.renderTemplate instead');
+    _legacyWarning('kb.renderAutoReleasedTemplate', '0.16.3', 'Please use kb.renderTemplate instead');
     return this.renderTemplate(template, view_model, options = {});
   };
 
@@ -6099,15 +6099,15 @@ kb.Backbone = Backbone = !this.Backbone && (typeof require !== 'undefined') ? re
 
 kb.ko = ko = !this.ko && (typeof require !== 'undefined') ? require('knockout') : this.ko;
 
-throwMissing = function(instance, message) {
+_throwMissing = function(instance, message) {
   throw "" + (_.isString(instance) ? instance : instance.constructor.name) + ": " + message + " is missing";
 };
 
-throwUnexpected = function(instance, message) {
+_throwUnexpected = function(instance, message) {
   throw "" + (_.isString(instance) ? instance : instance.constructor.name) + ": " + message + " is unexpected";
 };
 
-legacyWarning = function(identifier, last_version, message) {
+_legacyWarning = function(identifier, last_version, message) {
   var _base;
   this._legacy_warnings || (this._legacy_warnings = {});
   (_base = this._legacy_warnings)[identifier] || (_base[identifier] = 0);
@@ -6115,7 +6115,9 @@ legacyWarning = function(identifier, last_version, message) {
   return console.warn("warning: '" + identifier + "' has been deprecated (will be removed in Knockback after " + last_version + "). " + message + ".");
 };
 
-arraySplice = Array.prototype.splice;
+_arraySplice = Array.prototype.splice;
+
+_unwrapObservable = ko.utils.unwrapObservable;
 
 collapseOptions = function(options) {
   var result;
@@ -6157,14 +6159,14 @@ _wrappedKey = function(obj, key, value) {
       return void 0;
     }
   }
-  obj || throwUnexpected(this, "no obj for wrapping " + key);
+  obj || _throwUnexpected(this, "no obj for wrapping " + key);
   obj.__kb || (obj.__kb = {});
   obj.__kb[key] = value;
   return value;
 };
 
 _argumentsAddKey = function(args, key) {
-  arraySplice.call(args, 1, 0, key);
+  _arraySplice.call(args, 1, 0, key);
   return args;
 };
 
@@ -6303,7 +6305,7 @@ kb.utils = (function() {
       return creator;
     }
     if (owner && Backbone.RelationalModel && (owner instanceof Backbone.RelationalModel)) {
-      key = ko.utils.unwrapObservable(key);
+      key = _unwrapObservable(key);
       relation = _.find(owner.getRelations(), function(test) {
         return test.key === key;
       });
@@ -6349,7 +6351,7 @@ kb.utils = (function() {
   };
 
   utils.release = function(obj) {
-    legacyWarning('kb.utils.release', '0.16.0', 'Please use kb.release instead');
+    _legacyWarning('kb.utils.release', '0.16.0', 'Please use kb.release instead');
     return kb.release(obj);
   };
 
@@ -6585,9 +6587,9 @@ kb.Store = (function() {
       });
     } else {
       record = this.observable_records[index];
-      (kb.utils.wrappedObject(record.observable) === obj) || throwUnexpected(this, 'different object');
+      (kb.utils.wrappedObject(record.observable) === obj) || _throwUnexpected(this, 'different object');
       if (record.observable !== observable) {
-        (record.observable.constructor === observable.constructor) || throwUnexpected(this, 'replacing different type');
+        (record.observable.constructor === observable.constructor) || _throwUnexpected(this, 'replacing different type');
         this.replaced_observables.push(record.observable);
         record.observable = observable;
       }
@@ -6622,7 +6624,7 @@ kb.EventWatcher = (function() {
   EventWatcher.useOptionsOrCreate = function(options, emitter, obj, callback_options) {
     if (options.event_watcher) {
       if (!(options.event_watcher.emitter() === emitter || (options.event_watcher.model_ref === emitter))) {
-        throwUnexpected(this, 'emitter not matching');
+        _throwUnexpected(this, 'emitter not matching');
       }
       return kb.utils.wrappedEventWatcher(obj, options.event_watcher).registerCallbacks(obj, callback_options);
     } else {
@@ -6700,8 +6702,8 @@ kb.EventWatcher = (function() {
   EventWatcher.prototype.registerCallbacks = function(obj, callback_info) {
     var callbacks, event_name, event_names, event_selector, info, list, _i, _len,
       _this = this;
-    obj || throwMissing(this, 'obj');
-    callback_info || throwMissing(this, 'info');
+    obj || _throwMissing(this, 'obj');
+    callback_info || _throwMissing(this, 'info');
     event_selector = callback_info.event_selector ? callback_info.event_selector : 'change';
     event_names = event_selector.split(' ');
     for (_i = 0, _len = event_names.length; _i < _len; _i++) {
@@ -6719,7 +6721,7 @@ kb.EventWatcher = (function() {
             for (_j = 0, _len1 = list.length; _j < _len1; _j++) {
               info = list[_j];
               if (info.update && !info.rel_fn) {
-                if (emitter && info.key && (emitter.hasChanged && !emitter.hasChanged(ko.utils.unwrapObservable(info.key)))) {
+                if (emitter && info.key && (emitter.hasChanged && !emitter.hasChanged(_unwrapObservable(info.key)))) {
                   continue;
                 }
                 !kb.statistics || addStatisticsEvent(emitter, event_name, info);
@@ -6817,7 +6819,7 @@ kb.EventWatcher = (function() {
   EventWatcher.prototype._modelBindRelatationalInfo = function(event_name, info) {
     var key, relation;
     if ((event_name === 'change') && info.key && info.update) {
-      key = ko.utils.unwrapObservable(info.key);
+      key = _unwrapObservable(info.key);
       relation = _.find(this.ee.getRelations(), function(test) {
         return test.key === key;
       });
@@ -6874,7 +6876,7 @@ kb.Observable = (function() {
     var create_options, event_watcher, observable,
       _this = this;
     this.vm = vm;
-    options || throwMissing(this, 'options');
+    options || _throwMissing(this, 'options');
     this.vm || (this.vm = {});
     if (_.isString(options) || ko.isObservable(options)) {
       create_options = this.create_options = {
@@ -6885,7 +6887,7 @@ kb.Observable = (function() {
     }
     this.key = create_options.key;
     delete create_options.key;
-    this.key || throwMissing(this, 'key');
+    this.key || _throwMissing(this, 'key');
     !create_options.args || (this.args = create_options.args, delete create_options.args);
     !create_options.read || (this.read = create_options.read, delete create_options.read);
     !create_options.write || (this.write = create_options.write, delete create_options.write);
@@ -6896,39 +6898,39 @@ kb.Observable = (function() {
     observable = kb.utils.wrappedObservable(this, ko.dependentObservable({
       read: function() {
         var arg, args, new_value, _i, _len, _ref;
-        args = [ko.utils.unwrapObservable(_this.key)];
+        args = [_unwrapObservable(_this.key)];
         if (_this.args) {
           if (_.isArray(_this.args)) {
             _ref = _this.args;
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               arg = _ref[_i];
-              args.push(ko.utils.unwrapObservable(arg));
+              args.push(_unwrapObservable(arg));
             }
           } else {
-            args.push(ko.utils.unwrapObservable(_this.args));
+            args.push(_unwrapObservable(_this.args));
           }
         }
         if (_this._mdl === _this._model() && _this._mdl) {
           new_value = _this.read ? _this.read.apply(_this.vm, args) : _this._mdl.get.apply(_this._mdl, args);
           _this.update(new_value);
         }
-        return ko.utils.unwrapObservable(_this.vo());
+        return _unwrapObservable(_this.vo());
       },
       write: function(new_value) {
         var arg, args, set_info, unwrapped_new_value, _i, _len, _ref;
         unwrapped_new_value = _unwrapModels(new_value);
         set_info = {};
-        set_info[ko.utils.unwrapObservable(_this.key)] = unwrapped_new_value;
+        set_info[_unwrapObservable(_this.key)] = unwrapped_new_value;
         args = _this.write ? [unwrapped_new_value] : [set_info];
         if (_this.args) {
           if (_.isArray(_this.args)) {
             _ref = _this.args;
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               arg = _ref[_i];
-              args.push(ko.utils.unwrapObservable(arg));
+              args.push(_unwrapObservable(arg));
             }
           } else {
-            args.push(ko.utils.unwrapObservable(_this.args));
+            args.push(_unwrapObservable(_this.args));
           }
         }
         if (_this._mdl) {
@@ -7017,7 +7019,7 @@ kb.Observable = (function() {
       return;
     }
     if (this._mdl && !arguments.length) {
-      new_value = this._mdl.get(ko.utils.unwrapObservable(this.key));
+      new_value = this._mdl.get(_unwrapObservable(this.key));
     }
     (new_value !== void 0) || (new_value = null);
     new_type = kb.utils.valueType(new_value);
@@ -7124,7 +7126,7 @@ kb.ViewModel = (function() {
   function ViewModel(model, options, view_model) {
     var attribute_keys, bb_model, event_watcher, keys, mapped_keys, mapping_info, vm_key, _mdl, _ref,
       _this = this;
-    !model || (model instanceof Backbone.Model) || ((typeof model.get === 'function') && (typeof model.bind === 'function')) || throwUnexpected(this, 'not a model');
+    !model || (model instanceof Backbone.Model) || ((typeof model.get === 'function') && (typeof model.bind === 'function')) || _throwUnexpected(this, 'not a model');
     options || (options = {});
     view_model || (view_model = {});
     if (_.isArray(options)) {
@@ -7155,7 +7157,7 @@ kb.ViewModel = (function() {
           return;
         }
         if (_this.__kb_null) {
-          !new_model || throwUnexpected(_this, 'model set on shared null');
+          !new_model || _throwUnexpected(_this, 'model set on shared null');
           return;
         }
         kb.utils.wrappedObject(_this, new_model);
@@ -7290,7 +7292,7 @@ kb.viewModel = function(model, options, view_model) {
 };
 
 kb.observables = function(model, binding_info, view_model) {
-  legacyWarning('kb.observables', '0.16.0', 'Please use kb.viewModel instead');
+  _legacyWarning('kb.observables', '0.16.0', 'Please use kb.viewModel instead');
   return new kb.ViewModel(model, binding_info, view_model);
 };
 
@@ -7303,6 +7305,12 @@ kb.observables = function(model, binding_info, view_model) {
 */
 
 
+COMPARE_EQUAL = 0;
+
+COMPARE_ASCENDING = -1;
+
+COMPARE_DESCENDING = 1;
+
 kb.CollectionObservable = (function() {
 
   CollectionObservable.extend = Backbone.Model.extend;
@@ -7310,7 +7318,7 @@ kb.CollectionObservable = (function() {
   function CollectionObservable(collection, options) {
     var create_options, observable,
       _this = this;
-    !collection || (collection instanceof Backbone.Collection) || throwUnexpected(this, 'not a collection');
+    !collection || (collection instanceof Backbone.Collection) || _throwUnexpected(this, 'not a collection');
     options || (options = {});
     observable = kb.utils.wrappedObservable(this, ko.observableArray([]));
     observable.__kb_is_co = true;
@@ -7319,13 +7327,12 @@ kb.CollectionObservable = (function() {
     this.__kb._onCollectionChange = _.bind(this._onCollectionChange, this);
     options = collapseOptions(options);
     if (options.sort_attribute) {
-      this._sorted_index = ko.observable(this._sortAttributeFn(options.sort_attribute));
+      this._comparator = ko.observable(this._attributeComparator(options.sort_attribute));
     } else {
       if (options.sorted_index) {
-        legacyWarning(this, '0.16.3', 'use sorted_index_fn instead');
-        options.sorted_index_fn = options.sorted_index;
+        _legacyWarning('sortedIndex no longer supported', '0.16.7', 'please use comparator instead');
       }
-      this._sorted_index = ko.observable(options.sorted_index_fn);
+      this._comparator = ko.observable(options.comparator);
     }
     if (options.filters) {
       this._filters = ko.observableArray(_.isArray(options.filters) ? options.filters : options.filters ? [options.filters] : void 0);
@@ -7345,7 +7352,7 @@ kb.CollectionObservable = (function() {
     observable.destroy = _.bind(this.destroy, this);
     observable.shareOptions = _.bind(this.shareOptions, this);
     observable.filters = _.bind(this.filters, this);
-    observable.sortedIndex = _.bind(this.sortedIndex, this);
+    observable.comparator = _.bind(this.comparator, this);
     observable.sortAttribute = _.bind(this.sortAttribute, this);
     observable.viewModelByModel = _.bind(this.viewModelByModel, this);
     observable.hasViewModels = _.bind(this.hasViewModels, this);
@@ -7372,17 +7379,17 @@ kb.CollectionObservable = (function() {
       collection.bind('all', this.__kb._onCollectionChange);
     }
     this._mapper = ko.dependentObservable(function() {
-      var current_collection, filters, model, models, sorted_index_fn, view_model, view_models, _i, _len;
+      var comparator, current_collection, filters, models, view_models;
+      comparator = _this._comparator();
+      filters = _this._filters();
+      current_collection = _this._collection();
       if (_this.in_edit) {
         return;
       }
       observable = kb.utils.wrappedObservable(_this);
-      current_collection = _this._collection();
       if (current_collection) {
         models = current_collection.models;
       }
-      sorted_index_fn = _this._sorted_index();
-      filters = _this._filters();
       if (!models || (current_collection.models.length === 0)) {
         view_models = [];
       } else {
@@ -7391,13 +7398,10 @@ kb.CollectionObservable = (function() {
             return !_this._modelIsFiltered(model);
           });
         }
-        if (sorted_index_fn) {
-          view_models = [];
-          for (_i = 0, _len = models.length; _i < _len; _i++) {
-            model = models[_i];
-            view_model = _this._createViewModel(model);
-            view_models.splice(sorted_index_fn(view_models, view_model), 0, view_model);
-          }
+        if (comparator) {
+          view_models = _.map(models, function(model) {
+            return _this._createViewModel(model);
+          }).sort(comparator);
         } else {
           if (_this.models_only) {
             view_models = filters.length ? models : models.slice();
@@ -7451,12 +7455,16 @@ kb.CollectionObservable = (function() {
     }
   };
 
-  CollectionObservable.prototype.sortedIndex = function(sorted_index_fn) {
-    return this._sorted_index(sorted_index_fn);
+  CollectionObservable.prototype.comparator = function(comparator) {
+    return this._comparator(comparator);
+  };
+
+  CollectionObservable.prototype.sortedIndex = function() {
+    return _legacyWarning('sortedIndex no longer supported', '0.16.7', 'please use comparator instead');
   };
 
   CollectionObservable.prototype.sortAttribute = function(sort_attribute) {
-    return this._sorted_index(sort_attribute ? this._sortAttributeFn(sort_attribute) : null);
+    return this._comparator(sort_attribute ? this._attributeComparator(sort_attribute) : null);
   };
 
   CollectionObservable.prototype.viewModelByModel = function(model) {
@@ -7515,16 +7523,13 @@ kb.CollectionObservable = (function() {
   };
 
   CollectionObservable.prototype._onCollectionChange = function(event, arg) {
-    var add_index, collection, observable, sorted_index_fn, view_model;
+    var collection, comparator, observable, view_model;
     if (this.in_edit) {
       return;
     }
     switch (event) {
       case 'reset':
       case 'resort':
-        if (event === 'resort' && !this._sorted_index()) {
-          return;
-        }
         return this._collection.notifySubscribers(this._collection());
       case 'new':
       case 'add':
@@ -7534,13 +7539,13 @@ kb.CollectionObservable = (function() {
         observable = kb.utils.wrappedObservable(this);
         collection = this._collection();
         view_model = this._createViewModel(arg);
-        if ((sorted_index_fn = this._sorted_index())) {
-          add_index = sorted_index_fn(observable(), view_model);
-        } else {
-          add_index = collection.indexOf(arg);
-        }
         this.in_edit++;
-        observable.splice(add_index, 0, view_model);
+        if ((comparator = this._comparator())) {
+          observable().push(view_model);
+          observable.sort(comparator);
+        } else {
+          observable.splice(collection.indexOf(arg), 0, view_model);
+        }
         return this.in_edit--;
       case 'remove':
       case 'destroy':
@@ -7548,8 +7553,11 @@ kb.CollectionObservable = (function() {
       case 'change':
         if (this._modelIsFiltered(arg)) {
           return this._onModelRemove(arg);
-        } else if (this._sorted_index()) {
-          return this._onModelResort(arg);
+        } else if (comparator = this._comparator()) {
+          observable = kb.utils.wrappedObservable(this);
+          this.in_edit++;
+          observable.sort(comparator);
+          return this.in_edit--;
         }
     }
   };
@@ -7566,34 +7574,13 @@ kb.CollectionObservable = (function() {
     return this.in_edit--;
   };
 
-  CollectionObservable.prototype._onModelResort = function(model) {
-    var new_index, observable, previous_index, sorted_index_fn, sorted_view_models, view_model;
-    observable = kb.utils.wrappedObservable(this);
-    view_model = this.models_only ? model : this.viewModelByModel(model);
-    previous_index = observable.indexOf(view_model);
-    if ((sorted_index_fn = this._sorted_index())) {
-      sorted_view_models = _.clone(observable());
-      sorted_view_models.splice(previous_index, 1);
-      new_index = sorted_index_fn(sorted_view_models, view_model);
-    } else {
-      new_index = this._collection().indexOf(model);
-    }
-    if (previous_index === new_index) {
-      return;
-    }
-    this.in_edit++;
-    observable.splice(previous_index, 1);
-    observable.splice(new_index, 0, view_model);
-    return this.in_edit--;
-  };
-
   CollectionObservable.prototype._onObservableArrayChange = function(models_or_view_models) {
     var collection, has_filters, model, models, observable, view_model, view_models, _i, _len,
       _this = this;
     if (this.in_edit) {
       return;
     }
-    (this.models_only && (!models_or_view_models.length || kb.utils.hasModelSignature(models_or_view_models[0]))) || (!this.models_only && (!models_or_view_models.length || (_.isObject(models_or_view_models[0]) && !kb.utils.hasModelSignature(models_or_view_models[0])))) || throwUnexpected(this, 'incorrect type passed');
+    (this.models_only && (!models_or_view_models.length || kb.utils.hasModelSignature(models_or_view_models[0]))) || (!this.models_only && (!models_or_view_models.length || (_.isObject(models_or_view_models[0]) && !kb.utils.hasModelSignature(models_or_view_models[0])))) || _throwUnexpected(this, 'incorrect type passed');
     observable = kb.utils.wrappedObservable(this);
     collection = this._collection();
     if (!collection || (collection.models === models_or_view_models)) {
@@ -7629,24 +7616,29 @@ kb.CollectionObservable = (function() {
     this.in_edit--;
   };
 
-  CollectionObservable.prototype._sortAttributeFn = function(sort_attribute) {
-    if (this.models_only) {
-      return function(models, model) {
-        var attribute_name;
-        attribute_name = ko.utils.unwrapObservable(sort_attribute);
-        return _.sortedIndex(models, model, function(test) {
-          return test.get(attribute_name);
-        });
-      };
-    } else {
-      return function(view_models, model) {
-        var attribute_name;
-        attribute_name = ko.utils.unwrapObservable(sort_attribute);
-        return _.sortedIndex(view_models, model, function(test) {
-          return kb.utils.wrappedModel(test).get(attribute_name);
-        });
-      };
-    }
+  CollectionObservable.prototype._attributeComparator = function(sort_attribute) {
+    var modelAttributeCompare;
+    modelAttributeCompare = function(model_a, model_b) {
+      var attribute_name, value_a, value_b;
+      attribute_name = _unwrapObservable(sort_attribute);
+      value_a = model_a.get(attribute_name);
+      value_b = model_b.get(attribute_name);
+      if (typeof value_a !== "object") {
+        return (value_a === value_b ? COMPARE_EQUAL : (value_a < value_b ? COMPARE_ASCENDING : COMPARE_DESCENDING));
+      }
+      if (value_a === value_b) {
+        return COMPARE_EQUAL;
+      } else {
+        if (value_a < value_b) {
+          return COMPARE_ASCENDING;
+        } else {
+          return COMPARE_DESCENDING;
+        }
+      }
+    };
+    return (this.models_only ? modelAttributeCompare : function(model_a, model_b) {
+      return modelAttributeCompare(kb.utils.wrappedModel(model_a), kb.utils.wrappedModel(model_b));
+    });
   };
 
   CollectionObservable.prototype._createViewModel = function(model) {
@@ -7662,7 +7654,7 @@ kb.CollectionObservable = (function() {
     filters = this._filters();
     for (_i = 0, _len = filters.length; _i < _len; _i++) {
       filter = filters[_i];
-      filter = ko.utils.unwrapObservable(filter);
+      filter = _unwrapObservable(filter);
       if (((typeof filter === 'function') && filter(model)) || (model && (model.id === filter))) {
         return true;
       }
@@ -7678,14 +7670,6 @@ kb.collectionObservable = function(collection, options) {
   return new kb.CollectionObservable(collection, options);
 };
 
-kb.sortedIndexWrapAttr = kb.siwa = function(attribute_name, wrapper_constructor) {
-  return function(models, model) {
-    return _.sortedIndex(models, model, function(test) {
-      return new wrapper_constructor(kb.utils.wrappedModel(test).get(attribute_name));
-    });
-  };
-};
-
 /*
   knockback-inject.js
   (c) 2011, 2012 Kevin Malakoff.
@@ -7697,7 +7681,7 @@ kb.sortedIndexWrapAttr = kb.siwa = function(attribute_name, wrapper_constructor)
 
 ko.bindingHandlers['inject'] = {
   'init': function(element, value_accessor, all_bindings_accessor, view_model) {
-    return kb.Inject.inject(ko.utils.unwrapObservable(value_accessor()), view_model, element, value_accessor, all_bindings_accessor);
+    return kb.Inject.inject(_unwrapObservable(value_accessor()), view_model, element, value_accessor, all_bindings_accessor);
   }
 };
 
@@ -7829,10 +7813,10 @@ kb.DefaultObservable = (function() {
     observable = kb.utils.wrappedObservable(this, ko.dependentObservable({
       read: function() {
         var current_target;
-        if ((current_target = ko.utils.unwrapObservable(target_observable()))) {
+        if ((current_target = _unwrapObservable(target_observable()))) {
           return current_target;
         } else {
-          return ko.utils.unwrapObservable(_this.dv);
+          return _unwrapObservable(_this.dv);
         }
       },
       write: function(value) {
@@ -7861,7 +7845,7 @@ kb.defaultObservable = function(target, default_value) {
 };
 
 kb.defaultWrapper = function(target, default_value) {
-  legacyWarning('ko.defaultWrapper', '0.16.3', 'Please use kb.defaultObservable instead');
+  _legacyWarning('ko.defaultWrapper', '0.16.3', 'Please use kb.defaultObservable instead');
   return new kb.DefaultObservable(target, default_value);
 };
 
@@ -7933,7 +7917,7 @@ kb.toFormattedString = function(format) {
   args = arraySlice.call(arguments, 1);
   for (index in args) {
     arg = args[index];
-    value = ko.utils.unwrapObservable(arg);
+    value = _unwrapObservable(arg);
     value || (value = '');
     parameter_index = format.indexOf("\{" + index + "\}");
     while (parameter_index >= 0) {
@@ -8007,16 +7991,16 @@ kb.FormattedObservable = (function() {
     observable = kb.utils.wrappedObservable(this, ko.dependentObservable({
       read: function() {
         var arg, _i, _len;
-        args = [ko.utils.unwrapObservable(format)];
+        args = [_unwrapObservable(format)];
         for (_i = 0, _len = observable_args.length; _i < _len; _i++) {
           arg = observable_args[_i];
-          args.push(ko.utils.unwrapObservable(arg));
+          args.push(_unwrapObservable(arg));
         }
         return kb.toFormattedString.apply(null, args);
       },
       write: function(value) {
         var index, matches, max_count;
-        matches = kb.parseFormattedString(value, ko.utils.unwrapObservable(format));
+        matches = kb.parseFormattedString(value, _unwrapObservable(format));
         max_count = Math.min(observable_args.length, matches.length);
         index = 0;
         while (index < max_count) {
@@ -8060,26 +8044,26 @@ kb.LocalizedObservable = (function() {
     this.vm = vm;
     options || (options = {});
     this.vm || (this.vm = {});
-    this.read || throwMissing(this, 'read');
-    kb.locale_manager || throwMissing(this, 'kb.locale_manager');
+    this.read || _throwMissing(this, 'read');
+    kb.locale_manager || _throwMissing(this, 'kb.locale_manager');
     this.__kb || (this.__kb = {});
     this.__kb._onLocaleChange = _.bind(this._onLocaleChange, this);
     this.__kb._onChange = options.onChange;
     if (this.value) {
-      value = ko.utils.unwrapObservable(this.value);
+      value = _unwrapObservable(this.value);
     }
     this.vo = ko.observable(!value ? null : this.read(value, null));
     observable = kb.utils.wrappedObservable(this, ko.dependentObservable({
       read: function() {
         if (_this.value) {
-          ko.utils.unwrapObservable(_this.value);
+          _unwrapObservable(_this.value);
         }
         _this.vo();
-        return _this.read(ko.utils.unwrapObservable(_this.value));
+        return _this.read(_unwrapObservable(_this.value));
       },
       write: function(value) {
-        _this.write || throwUnexpected(_this, 'writing to read-only');
-        _this.write(value, ko.utils.unwrapObservable(_this.value));
+        _this.write || _throwUnexpected(_this, 'writing to read-only');
+        _this.write(value, _unwrapObservable(_this.value));
         _this.vo(value);
         if (_this.__kb._onChange) {
           return _this.__kb._onChange(value);
@@ -8106,7 +8090,7 @@ kb.LocalizedObservable = (function() {
   LocalizedObservable.prototype.resetToCurrent = function() {
     var current_value, observable;
     observable = kb.utils.wrappedObservable(this);
-    current_value = this.value ? this.read(ko.utils.unwrapObservable(this.value)) : null;
+    current_value = this.value ? this.read(_unwrapObservable(this.value)) : null;
     if (observable() === current_value) {
       return;
     }
@@ -8123,7 +8107,7 @@ kb.LocalizedObservable = (function() {
 
   LocalizedObservable.prototype._onLocaleChange = function() {
     var value;
-    value = this.read(ko.utils.unwrapObservable(this.value));
+    value = this.read(_unwrapObservable(this.value));
     this.vo(value);
     if (this.__kb._onChange) {
       return this.__kb._onChange(value);
@@ -8166,8 +8150,8 @@ kb.TriggeredObservable = (function() {
     var observable,
       _this = this;
     this.event_selector = event_selector;
-    emitter || throwMissing(this, 'emitter');
-    this.event_selector || throwMissing(this, 'event_selector');
+    emitter || _throwMissing(this, 'emitter');
+    this.event_selector || _throwMissing(this, 'event_selector');
     this.vo = ko.observable();
     observable = kb.utils.wrappedObservable(this, ko.dependentObservable(function() {
       return _this.vo();
@@ -8223,7 +8207,7 @@ kb.triggeredObservable = function(emitter, event_selector) {
 
 
 callOrGet = function(value) {
-  value = ko.utils.unwrapObservable(value);
+  value = _unwrapObservable(value);
   if (typeof value === 'function') {
     return value.apply(null, Array.prototype.slice.call(arguments, 1));
   } else {
@@ -8235,139 +8219,136 @@ kb.Validation = (function() {
 
   function Validation() {}
 
-  Validation.valueValidator = function(value, bindings, validation_options) {
-    if (validation_options == null) {
-      validation_options = {};
-    }
-    (validation_options && !(typeof validation_options === 'function')) || (validation_options = {});
-    return ko.dependentObservable(function() {
-      var active_index, current_value, disabled, identifier, identifier_index, priorities, results, validator;
-      results = {
-        $error_count: 0
-      };
-      current_value = ko.utils.unwrapObservable(value);
-      !('disable' in validation_options) || (disabled = callOrGet(validation_options.disable));
-      !('enable' in validation_options) || (disabled = !callOrGet(validation_options.enable));
-      priorities = validation_options.priorities || [];
-      _.isArray(priorities) || (priorities = [priorities]);
-      active_index = priorities.length + 1;
-      for (identifier in bindings) {
-        validator = bindings[identifier];
-        results[identifier] = !disabled && callOrGet(validator, current_value);
-        if (results[identifier]) {
-          results.$error_count++;
-          (identifier_index = _.indexOf(priorities, identifier) >= 0) || (identifier_index = priorities.length);
-          if (results.$active_error && identifier_index < active_index) {
-            results.$active_error = identifier;
-            active_index = identifier_index;
-          } else {
-            results.$active_error || (results.$active_error = identifier, active_index = identifier_index);
-          }
-        }
-      }
-      results.$enabled = !disabled;
-      results.$disable = !!disabled;
-      results.$valid = results.$error_count === 0;
-      return results;
-    });
-  };
-
-  Validation.inputValidator = function(view_model, el, validation_options) {
-    var $input_el, bindings, identifier, input_name, options, result, type, validator, validators;
-    (validation_options && !(typeof validation_options === 'function')) || (validation_options = {});
-    validators = kb.valid;
-    $input_el = $(el);
-    if ((input_name = $input_el.attr('name')) && !_.isString(input_name)) {
-      input_name = null;
-    }
-    if (!(bindings = $input_el.attr('data-bind'))) {
-      return null;
-    }
-    options = (new Function("sc", "with(sc[0]) { return { " + bindings + " } }"))([view_model]);
-    if (!(options && options.value)) {
-      return null;
-    }
-    (!options.validation_options) || (_.defaults(options.validation_options, validation_options), validation_options = options.validation_options);
-    bindings = {};
-    (!validators[type = $input_el.attr('type')]) || (bindings[type] = validators[type]);
-    (!$input_el.attr('required')) || (bindings.required = validators.required);
-    (!options.validations) || ((function() {
-      var _ref, _results;
-      _ref = options.validations;
-      _results = [];
-      for (identifier in _ref) {
-        validator = _ref[identifier];
-        _results.push(bindings[identifier] = validator);
-      }
-      return _results;
-    })());
-    result = kb.valueValidator(options.value, bindings, validation_options);
-    (!input_name && !validation_options.no_attach) || (view_model["$" + input_name] = result);
-    return result;
-  };
-
-  Validation.formValidator = function(view_model, el) {
-    var $root_el, bindings, form_name, input_el, name, options, results, validation_options, validator, validators, _i, _len, _ref;
-    results = {};
-    validators = [];
-    $root_el = $(el);
-    if ((form_name = $root_el.attr('name')) && !_.isString(form_name)) {
-      form_name = null;
-    }
-    if ((bindings = $root_el.attr('data-bind'))) {
-      options = (new Function("sc", "with(sc[0]) { return { " + bindings + " } }"))([view_model]);
-      validation_options = options.validation_options;
-    }
-    validation_options || (validation_options = {});
-    validation_options.no_attach = !!form_name;
-    _ref = $root_el.find('input');
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      input_el = _ref[_i];
-      if (!(name = $(input_el).attr('name'))) {
-        continue;
-      }
-      validator = kb.inputValidator(view_model, input_el, validation_options);
-      !validator || validators.push(results[name] = validator);
-    }
-    results.$error_count = ko.dependentObservable(function() {
-      var error_count, _j, _len1;
-      error_count = 0;
-      for (_j = 0, _len1 = validators.length; _j < _len1; _j++) {
-        validator = validators[_j];
-        error_count += validator().$error_count;
-      }
-      return error_count;
-    });
-    results.$valid = ko.dependentObservable(function() {
-      return results.$error_count() === 0;
-    });
-    results.$enabled = ko.dependentObservable(function() {
-      var enabled, _j, _len1;
-      enabled = true;
-      for (_j = 0, _len1 = validators.length; _j < _len1; _j++) {
-        validator = validators[_j];
-        enabled &= validator().$enabled;
-      }
-      return enabled;
-    });
-    results.$disabled = ko.dependentObservable(function() {
-      return !results.$enabled();
-    });
-    if (form_name) {
-      view_model["$" + form_name] = results;
-    }
-    return results;
-  };
-
   return Validation;
 
 })();
 
-kb.valueValidator = kb.Validation.valueValidator;
+kb.valueValidator = function(value, bindings, validation_options) {
+  if (validation_options == null) {
+    validation_options = {};
+  }
+  (validation_options && !(typeof validation_options === 'function')) || (validation_options = {});
+  return ko.dependentObservable(function() {
+    var active_index, current_value, disabled, identifier, identifier_index, priorities, results, validator;
+    results = {
+      $error_count: 0
+    };
+    current_value = _unwrapObservable(value);
+    !('disable' in validation_options) || (disabled = callOrGet(validation_options.disable));
+    !('enable' in validation_options) || (disabled = !callOrGet(validation_options.enable));
+    priorities = validation_options.priorities || [];
+    _.isArray(priorities) || (priorities = [priorities]);
+    active_index = priorities.length + 1;
+    for (identifier in bindings) {
+      validator = bindings[identifier];
+      results[identifier] = !disabled && callOrGet(validator, current_value);
+      if (results[identifier]) {
+        results.$error_count++;
+        (identifier_index = _.indexOf(priorities, identifier) >= 0) || (identifier_index = priorities.length);
+        if (results.$active_error && identifier_index < active_index) {
+          results.$active_error = identifier;
+          active_index = identifier_index;
+        } else {
+          results.$active_error || (results.$active_error = identifier, active_index = identifier_index);
+        }
+      }
+    }
+    results.$enabled = !disabled;
+    results.$disable = !!disabled;
+    results.$valid = results.$error_count === 0;
+    return results;
+  });
+};
 
-kb.inputValidator = kb.Validation.inputValidator;
+kb.inputValidator = function(view_model, el, validation_options) {
+  var $input_el, bindings, identifier, input_name, options, result, type, validator, validators;
+  if (validation_options == null) {
+    validation_options = {};
+  }
+  (validation_options && !(typeof validation_options === 'function')) || (validation_options = {});
+  validators = kb.valid;
+  $input_el = $(el);
+  if ((input_name = $input_el.attr('name')) && !_.isString(input_name)) {
+    input_name = null;
+  }
+  if (!(bindings = $input_el.attr('data-bind'))) {
+    return null;
+  }
+  options = (new Function("sc", "with(sc[0]) { return { " + bindings + " } }"))([view_model]);
+  if (!(options && options.value)) {
+    return null;
+  }
+  (!options.validation_options) || (_.defaults(options.validation_options, validation_options), validation_options = options.validation_options);
+  bindings = {};
+  (!validators[type = $input_el.attr('type')]) || (bindings[type] = validators[type]);
+  (!$input_el.attr('required')) || (bindings.required = validators.required);
+  (!options.validations) || ((function() {
+    var _ref, _results;
+    _ref = options.validations;
+    _results = [];
+    for (identifier in _ref) {
+      validator = _ref[identifier];
+      _results.push(bindings[identifier] = validator);
+    }
+    return _results;
+  })());
+  result = kb.valueValidator(options.value, bindings, validation_options);
+  (!input_name && !validation_options.no_attach) || (view_model["$" + input_name] = result);
+  return result;
+};
 
-kb.formValidator = kb.Validation.formValidator;
+kb.formValidator = function(view_model, el) {
+  var $root_el, bindings, form_name, input_el, name, options, results, validation_options, validator, validators, _i, _len, _ref;
+  results = {};
+  validators = [];
+  $root_el = $(el);
+  if ((form_name = $root_el.attr('name')) && !_.isString(form_name)) {
+    form_name = null;
+  }
+  if ((bindings = $root_el.attr('data-bind'))) {
+    options = (new Function("sc", "with(sc[0]) { return { " + bindings + " } }"))([view_model]);
+    validation_options = options.validation_options;
+  }
+  validation_options || (validation_options = {});
+  validation_options.no_attach = !!form_name;
+  _ref = $root_el.find('input');
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    input_el = _ref[_i];
+    if (!(name = $(input_el).attr('name'))) {
+      continue;
+    }
+    validator = kb.inputValidator(view_model, input_el, validation_options);
+    !validator || validators.push(results[name] = validator);
+  }
+  results.$error_count = ko.dependentObservable(function() {
+    var error_count, _j, _len1;
+    error_count = 0;
+    for (_j = 0, _len1 = validators.length; _j < _len1; _j++) {
+      validator = validators[_j];
+      error_count += validator().$error_count;
+    }
+    return error_count;
+  });
+  results.$valid = ko.dependentObservable(function() {
+    return results.$error_count() === 0;
+  });
+  results.$enabled = ko.dependentObservable(function() {
+    var enabled, _j, _len1;
+    enabled = true;
+    for (_j = 0, _len1 = validators.length; _j < _len1; _j++) {
+      validator = validators[_j];
+      enabled &= validator().$enabled;
+    }
+    return enabled;
+  });
+  results.$disabled = ko.dependentObservable(function() {
+    return !results.$enabled();
+  });
+  if (form_name) {
+    view_model["$" + form_name] = results;
+  }
+  return results;
+};
 
 /*
   knockback-validators.js 0.16.7
@@ -8405,7 +8386,7 @@ kb.hasChangedFn = function(model) {
   attributes = null;
   return function() {
     var current_model;
-    if (m !== (current_model = ko.utils.unwrapObservable(model))) {
+    if (m !== (current_model = _unwrapObservable(model))) {
       m = current_model;
       attributes = (m ? m.toJSON() : null);
       return false;
@@ -8427,9 +8408,9 @@ kb.uniqueValueFn = function(model, key, collection) {
   return function(value) {
     var c, k, m,
       _this = this;
-    m = ko.utils.unwrapObservable(model);
-    k = ko.utils.unwrapObservable(key);
-    c = ko.utils.unwrapObservable(collection);
+    m = _unwrapObservable(model);
+    k = _unwrapObservable(key);
+    c = _unwrapObservable(collection);
     if (!(m && k && c)) {
       return false;
     }
@@ -8449,11 +8430,11 @@ kb.untilTrueFn = function(stand_in, fn, model) {
   }
   return function(value) {
     var f, result;
-    if (!(f = ko.utils.unwrapObservable(fn))) {
-      return ko.utils.unwrapObservable(stand_in);
+    if (!(f = _unwrapObservable(fn))) {
+      return _unwrapObservable(stand_in);
     }
-    was_true |= !!(result = f(ko.utils.unwrapObservable(value)));
-    return (was_true ? result : ko.utils.unwrapObservable(stand_in));
+    was_true |= !!(result = f(_unwrapObservable(value)));
+    return (was_true ? result : _unwrapObservable(stand_in));
   };
 };
 
@@ -8467,11 +8448,11 @@ kb.untilFalseFn = function(stand_in, fn, model) {
   }
   return function(value) {
     var f, result;
-    if (!(f = ko.utils.unwrapObservable(fn))) {
-      return ko.utils.unwrapObservable(stand_in);
+    if (!(f = _unwrapObservable(fn))) {
+      return _unwrapObservable(stand_in);
     }
-    was_false |= !(result = f(ko.utils.unwrapObservable(value)));
-    return (was_false ? result : ko.utils.unwrapObservable(stand_in));
+    was_false |= !(result = f(_unwrapObservable(value)));
+    return (was_false ? result : _unwrapObservable(stand_in));
   };
 };
 ; return kb;});
