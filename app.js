@@ -84,7 +84,7 @@
       });
       this.deleteAllThings = function() {
         var model, _i, _len, _ref;
-        _ref = _.clone(_this.collections.things.models);
+        _ref = _this.collections.things.models.slice();
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           model = _ref[_i];
           model.destroy();
@@ -159,6 +159,7 @@
       } else {
         this.collections.things.reset();
         kb.utils.wrappedStore(this.things_links).clear();
+        this.things_links.filters(null);
         return Backbone.Relational.store.clear();
       }
     };

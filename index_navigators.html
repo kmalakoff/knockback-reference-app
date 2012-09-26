@@ -83,7 +83,7 @@
     <div class='pane page'><div class='container'>
 
       <!-- * LINKS TO THINGS - TOP * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('') }}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('', {name: 'Slide', inverse: true}) }}"></div>
 
       <!-- * ADD A THING * -->
       <div class="thumbnail form-actions">
@@ -104,7 +104,7 @@
       </div>
 
       <!-- * LINKS TO THINGS - BOTTOM * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('') }}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('', {name: 'Slide', inverse: true}) }}"></div>
 
     </div></div>
   </script>
@@ -114,7 +114,7 @@
     <div class='pane page'><div class='container'>
 
       <!-- * LINKS TO THINGS - TOP * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('things')}}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('things', {name: 'SlideUp', inverse: true})}}"></div>
 
       <!-- ko if: is_loaded -->
         <div class='cell thumbnail form-actions'>

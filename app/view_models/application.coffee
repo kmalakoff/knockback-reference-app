@@ -14,7 +14,7 @@ class window.ApplicationViewModel
     @collections =
       things: new ThingCollection()
     @things_links = kb.collectionObservable(app.collections.things, {view_model: ThingLinkViewModel, filters: @id, sort_attribute: 'name'})
-    @deleteAllThings = => model.destroy() for model in _.clone(@collections.things.models); return
+    @deleteAllThings = => model.destroy() for model in @collections.things.models.slice(); return
     @saveAllThings = => model.save() for model in @collections.things.models; return
 
     #########################
@@ -58,6 +58,7 @@ class window.ApplicationViewModel
     else
       @collections.things.reset()
       kb.utils.wrappedStore(@things_links).clear() # release the store
+      @things_links.filters(null) # clear the filter
       Backbone.Relational.store.clear() # clean up caches so can check used memory
 
   loadPage: (el) ->
