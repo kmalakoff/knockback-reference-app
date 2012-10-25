@@ -7305,6 +7305,27 @@ COMPARE_ASCENDING = -1;
 
 COMPARE_DESCENDING = 1;
 
+kb.compare = function(value_a, value_b) {
+  if (_.isString(value_a)) {
+    return value_a.localeCompare(value_b);
+  }
+  if (_.isString(value_b)) {
+    return value_b.localeCompare(value_a);
+  }
+  if (typeof value_a !== "object") {
+    return (value_a === value_b ? COMPARE_EQUAL : (value_a < value_b ? COMPARE_ASCENDING : COMPARE_DESCENDING));
+  }
+  if (value_a === value_b) {
+    return COMPARE_EQUAL;
+  } else {
+    if (value_a < value_b) {
+      return COMPARE_ASCENDING;
+    } else {
+      return COMPARE_DESCENDING;
+    }
+  }
+};
+
 kb.CollectionObservable = (function() {
 
   CollectionObservable.extend = Backbone.Model.extend;
@@ -7527,7 +7548,8 @@ kb.CollectionObservable = (function() {
     switch (event) {
       case 'reset':
       case 'resort':
-        return this._collection.notifySubscribers(this._collection());
+        this._collection.notifySubscribers(this._collection());
+        break;
       case 'new':
       case 'add':
         if (this._modelIsFiltered(arg)) {
@@ -7535,6 +7557,9 @@ kb.CollectionObservable = (function() {
         }
         observable = kb.utils.wrappedObservable(this);
         collection = this._collection();
+        if ((view_model = this.viewModelByModel(arg))) {
+          return;
+        }
         view_model = this._createViewModel(arg);
         this.in_edit++;
         if ((comparator = this._comparator())) {
@@ -7543,18 +7568,27 @@ kb.CollectionObservable = (function() {
         } else {
           observable.splice(collection.indexOf(arg), 0, view_model);
         }
-        return this.in_edit--;
+        this.in_edit--;
+        break;
       case 'remove':
       case 'destroy':
-        return this._onModelRemove(arg);
+        this._onModelRemove(arg);
+        break;
       case 'change':
         if (this._modelIsFiltered(arg)) {
-          return this._onModelRemove(arg);
-        } else if (comparator = this._comparator()) {
-          observable = kb.utils.wrappedObservable(this);
-          this.in_edit++;
-          observable.sort(comparator);
-          return this.in_edit--;
+          this._onModelRemove(arg);
+        } else {
+          view_model = this.viewModelByModel(arg);
+          if (view_model) {
+            if ((comparator = this._comparator())) {
+              observable = kb.utils.wrappedObservable(this);
+              this.in_edit++;
+              observable.sort(comparator);
+              this.in_edit--;
+            }
+          } else {
+            this._onCollectionChange('add', arg);
+          }
         }
     }
   };
@@ -7580,10 +7614,10 @@ kb.CollectionObservable = (function() {
     (this.models_only && (!models_or_view_models.length || kb.utils.hasModelSignature(models_or_view_models[0]))) || (!this.models_only && (!models_or_view_models.length || (_.isObject(models_or_view_models[0]) && !kb.utils.hasModelSignature(models_or_view_models[0])))) || _throwUnexpected(this, 'incorrect type passed');
     observable = kb.utils.wrappedObservable(this);
     collection = this._collection();
-    if (!collection || (collection.models === models_or_view_models)) {
+    has_filters = this._filters().length;
+    if (!collection) {
       return;
     }
-    has_filters = this._filters().length;
     view_models = models_or_view_models;
     if (this.models_only) {
       if (has_filters) {
@@ -7609,35 +7643,16 @@ kb.CollectionObservable = (function() {
     }
     this.in_edit++;
     (models_or_view_models.length === view_models.length) || observable(view_models);
-    collection.reset(models);
+    _.isEqual(collection.models, models) || collection.reset(models);
     this.in_edit--;
   };
 
   CollectionObservable.prototype._attributeComparator = function(sort_attribute) {
     var modelAttributeCompare;
     modelAttributeCompare = function(model_a, model_b) {
-      var attribute_name, value_a, value_b;
+      var attribute_name;
       attribute_name = _unwrapObservable(sort_attribute);
-      value_a = model_a.get(attribute_name);
-      value_b = model_b.get(attribute_name);
-      if (_.isString(value_a)) {
-        return value_a.localeCompare(value_b);
-      }
-      if (_.isString(value_b)) {
-        return value_b.localeCompare(value_a);
-      }
-      if (typeof value_a !== "object") {
-        return (value_a === value_b ? COMPARE_EQUAL : (value_a < value_b ? COMPARE_ASCENDING : COMPARE_DESCENDING));
-      }
-      if (value_a === value_b) {
-        return COMPARE_EQUAL;
-      } else {
-        if (value_a < value_b) {
-          return COMPARE_ASCENDING;
-        } else {
-          return COMPARE_DESCENDING;
-        }
-      }
+      return kb.compare(model_a.get(attribute_name), model_b.get(attribute_name));
     };
     return (this.models_only ? modelAttributeCompare : function(model_a, model_b) {
       return modelAttributeCompare(kb.utils.wrappedModel(model_a), kb.utils.wrappedModel(model_b));
