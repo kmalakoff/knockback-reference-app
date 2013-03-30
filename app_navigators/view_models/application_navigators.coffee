@@ -20,7 +20,7 @@ class window.ApplicationNavigatorsViewModel extends ApplicationViewModel
     router.route('things', null, page_navigator.dispatcher(->
       page_navigator.loadPage({
         create: -> kb.renderTemplate('things_page', new ThingsPageViewModel())
-        transition: 'Slide'
+        transition: 'NavigationSlide'
       })
     ))
 
@@ -31,7 +31,7 @@ class window.ApplicationNavigatorsViewModel extends ApplicationViewModel
           view_model = new ThingViewModel(model)
           app.things_links.filters(view_model.id) # add a filter to the available models
           kb.renderTemplate('thing_page', view_model)
-        transition: 'SlideUp'
+        transition: 'CoverVertical'
       })
     ))
 

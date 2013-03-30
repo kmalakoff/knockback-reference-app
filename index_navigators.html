@@ -83,7 +83,7 @@
     <div class='pane page'><div class='container'>
 
       <!-- * LINKS TO THINGS - TOP * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('', {name: 'Slide', inverse: true}) }}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('', {name: 'NavigationSlide', inverse: true}) }}"></div>
 
       <!-- * ADD A THING * -->
       <div class="thumbnail form-actions">
@@ -104,7 +104,7 @@
       </div>
 
       <!-- * LINKS TO THINGS - BOTTOM * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('', {name: 'Slide', inverse: true}) }}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('', {name: 'NavigationSlide', inverse: true}) }}"></div>
 
     </div></div>
   </script>
@@ -114,7 +114,7 @@
     <div class='pane page'><div class='container'>
 
       <!-- * LINKS TO THINGS - TOP * -->
-      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('things', {name: 'SlideUp', inverse: true})}}"></div>
+      <div data-bind="template: {name: 'thing_links_hortizontal_bar', data: {goBack: kb.loadUrlFn('things', {name: 'CoverVertical', inverse: true})}}"></div>
 
       <!-- ko if: is_loaded -->
         <div class='cell thumbnail form-actions'>
@@ -176,7 +176,7 @@
         <button class='btn btn-small' data-bind="click: kb.nextPane"><i class='icon-step-forward'></i></button>
 
         <div style='position: relative; min-height: 180px'>
-          <div class='pane-navigator' data-bind="PaneNavigator: {transition: 'Slide'}, foreach: my_things">
+          <div class='pane-navigator' data-bind="PaneNavigator: {transition: 'NavigationSlide'}, foreach: my_things">
             <div class='pane'>
               <div class='cell thumbnail form-actions' data-bind="click: kb.loadUrlFn('things/'+id()), template: 'thing_view'"></div>
             </div>
