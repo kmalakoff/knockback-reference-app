@@ -31,6 +31,11 @@ window.ThingViewModel = kb.ViewModel.extend({
     )
     return
 
+  destroy: ->
+    @[fn] = null for fn in ['onSubmit', 'onDelete', 'onStartEdit', 'onCancelEdit']
+    @start_attributes = null
+    kb.ViewModel.prototype.destroy.call(@)
+
   onSubmit: ->
     return unless model = @model() # not loaded
 
