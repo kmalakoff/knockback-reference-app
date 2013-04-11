@@ -22,8 +22,8 @@
     "easy-bake": "0.1.8"
   },
   "dependencies": {
-    "knockback": ">=0.17.1",
-    "backbone-relational": "0.8.0plus",
+    "knockback": ">=0.17.2",
+    "backbone-relational": "0.8.5",
     "knockback-navigators": ">=0.1.1",
     "backbone-modelref": ">=0.1.5"
   },
