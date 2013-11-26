@@ -22,7 +22,7 @@
     "easy-bake": "*"
   },
   "dependencies": {
-    "knockback": "git+https://github.com/kmalakoff/knockback",
+    "knockback": "0.18.x",
     "backbone-relational": "0.8.x",
     "knockback-navigators": "0.1.x",
     "backbone-modelref": "0.1.x"
